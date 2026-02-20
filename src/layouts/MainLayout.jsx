@@ -16,7 +16,7 @@ const MainLayout = () => {
       <Box sx={{ 
         flexGrow: 1,
         width: '100%',
-        marginLeft: { xs: 0, md: '280px' }
+        marginLeft: { xs: 0 }
       }}>
         <Navbar onMenuClick={() => setMobileOpen(true)} />
         <Box component="main" sx={{ marginTop: '64px', padding: { xs: 2, sm: 3, md: 4 } }}>
