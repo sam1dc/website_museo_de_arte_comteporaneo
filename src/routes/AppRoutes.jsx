@@ -12,6 +12,10 @@ import CompradoresView from '../views/CompradoresView';
 import FacturacionView from '../views/FacturacionView';
 import ReportesView from '../views/ReportesView';
 import CatalogoView from '../views/CatalogoView';
+import DetalleObraView from '../views/DetalleObraView';
+import ArtistaPerfilView from '../views/ArtistaPerfilView';
+import CheckoutView from '../views/CheckoutView';
+import ConfirmacionCompraView from '../views/ConfirmacionCompraView';
 import MisComprasView from '../views/MisComprasView';
 
 const AppRoutes = () => {
@@ -39,6 +43,10 @@ const AppRoutes = () => {
       {/* Sitio Público */}
       <Route path="/museo-de-arte-contemporaneo" element={<PublicLayout />}>
         <Route index element={<CatalogoView />} />
+        <Route path="obra/:id" element={<DetalleObraView />} />
+        <Route path="artista/:id" element={<ArtistaPerfilView />} />
+        <Route path="checkout/:id" element={<CheckoutView />} />
+        <Route path="confirmacion" element={<ConfirmacionCompraView />} />
         <Route path="mis-compras" element={<MisComprasView />} />
       </Route>
     </Routes>
