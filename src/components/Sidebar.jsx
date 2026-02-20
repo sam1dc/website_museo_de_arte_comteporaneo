@@ -1,5 +1,5 @@
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { Dashboard as DashboardIcon, Person as PersonIcon, Category as CategoryIcon } from '@mui/icons-material';
+import { Dashboard as DashboardIcon, Person as PersonIcon, Category as CategoryIcon, Palette as PaletteIcon, Image as ImageIcon, ShoppingCart as ShoppingCartIcon, Receipt as ReceiptIcon, Assessment as AssessmentIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ mobileOpen, onMobileClose }) => {
@@ -9,7 +9,12 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { id: 'usuarios', label: 'Usuarios', icon: <PersonIcon />, path: '/usuarios' },
-    { id: 'generos', label: 'Géneros', icon: <CategoryIcon />, path: '/generos' }
+    { id: 'generos', label: 'Géneros', icon: <CategoryIcon />, path: '/generos' },
+    { id: 'artistas', label: 'Artistas', icon: <PaletteIcon />, path: '/artistas' },
+    { id: 'obras', label: 'Obras', icon: <ImageIcon />, path: '/obras' },
+    { id: 'compradores', label: 'Compradores', icon: <ShoppingCartIcon />, path: '/compradores' },
+    { id: 'facturacion', label: 'Facturación', icon: <ReceiptIcon />, path: '/facturacion' },
+    { id: 'reportes', label: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' }
   ];
 
   const handleMenuClick = (path) => {

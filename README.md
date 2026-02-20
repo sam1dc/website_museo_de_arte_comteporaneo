@@ -50,9 +50,23 @@ src/
 - Diseño minimalista siguiendo guías MAC
 
 ### Módulos
+
+### Panel Administrativo (Completados)
 - **Dashboard**: Vista principal con estadísticas
 - **Usuarios**: Gestión de usuarios administradores
 - **Géneros**: CRUD de géneros artísticos con características
+- **Artistas**: CRUD de artistas con biografía y géneros
+- **Obras**: CRUD de obras con precio, estatus y características
+- **Compradores**: Gestión de compradores con membresías
+- **Facturación**: Generación de facturas con cálculo de IVA y ganancia
+- **Reportes**: Consultas de obras vendidas, facturación y membresías
+
+### Sitio Público (Pendientes)
+- Catálogo de Obras
+- Perfil de Artista
+- Registro de Compradores
+- Login de Compradores
+- Proceso de Compra
 
 ## Guías de Diseño
 
@@ -82,23 +96,38 @@ npm run dev
 
 ## Rutas
 
+### Panel Administrativo
 - `/login` - Página de inicio de sesión
 - `/` - Dashboard (home)
 - `/usuarios` - Gestión de usuarios
 - `/generos` - Gestión de géneros artísticos
+- `/artistas` - Gestión de artistas
+- `/obras` - Gestión de obras de arte
+- `/compradores` - Gestión de compradores
+- `/facturacion` - Generación de facturas
+- `/reportes` - Reportes y consultas
 
 ## Próximos Módulos
 
-Según `proyecto.md`, los siguientes módulos están pendientes:
+Los siguientes módulos del sitio público están pendientes:
 
-1. Gestión de Artistas
-2. Gestión de Obras
-3. Gestión de Compradores
-4. Facturación
-5. Reportes/Consultas
-6. Catálogo Público
-7. Registro de Compradores
-8. Proceso de Compra
+1. Catálogo Público de Obras
+2. Perfil de Artista (vista pública)
+3. Registro de Compradores
+4. Login de Compradores
+5. Proceso de Compra
+
+## Estado del Proyecto
+
+✅ **Panel Administrativo**: 100% completado
+- Todos los módulos CRUD implementados
+- Sistema de facturación con cálculos automáticos
+- Reportes y consultas por período
+- Diseño responsive en todos los módulos
+
+⏳ **Sitio Público**: Pendiente
+- Catálogo de obras para visitantes
+- Sistema de registro y compra para clientes
 
 ## Notas
 
