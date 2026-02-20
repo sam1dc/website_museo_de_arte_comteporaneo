@@ -1,16 +1,13 @@
-import { AuthProvider, useAuth } from './hooks/useAuth';
-import LoginView from './views/LoginView';
-import DashboardView from './views/DashboardView';
-
-function AppContent() {
-  const { user } = useAuth();
-  return user ? <DashboardView /> : <LoginView />;
-}
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './hooks/useAuth';
+import AppRoutes from './routes/AppRoutes';
 
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </AuthProvider>
   );
 }

@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material';
 
 const UsuariosContent = () => {
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       <Typography variant="h4" className="font-light tracking-wide mb-8">
         Usuarios
       </Typography>

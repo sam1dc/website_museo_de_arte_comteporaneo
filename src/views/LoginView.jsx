@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { Box, Container, Typography, Alert } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../hooks/useAuth';
 
 const LoginView = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogin = (credentials) => {
     const success = login(credentials.email, credentials.password);
-    if (!success) {
+    if (success) {
+      navigate('/');
+    } else {
       setError('Credenciales incorrectas');
     }
   };
@@ -22,12 +26,12 @@ const LoginView = () => {
         <Box className="absolute bottom-20 right-20 w-96 h-96 bg-gray-400 rounded-full blur-3xl" />
       </Box>
 
-      <Container maxWidth="sm" className="relative z-10">
-        <Box className="bg-white/95 backdrop-blur-sm p-16 border border-gray-100">
-          <Box className="mb-12">
+      <Container maxWidth="sm" className="relative z-10 px-4">
+        <Box className="bg-white/95 backdrop-blur-sm p-6 sm:p-12 md:p-16 border border-gray-100">
+          <Box className="mb-8 sm:mb-12">
             <Typography 
               variant="h3" 
-              className="font-extralight tracking-widest text-black mb-3 uppercase"
+              className="font-extralight tracking-widest text-black mb-3 uppercase text-2xl sm:text-3xl"
               sx={{ letterSpacing: '0.2em' }}
             >
               MAC

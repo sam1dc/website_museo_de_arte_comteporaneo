@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, Avatar, Box } from '@mui/material';
-import { AccountCircle, Logout } from '@mui/icons-material';
+import { AccountCircle, Logout, Menu as MenuIcon } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import ProfileDialog from './ProfileDialog';
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -20,6 +22,7 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     handleClose();
+    navigate('/login');
   };
 
   return (
@@ -27,8 +30,8 @@ const Navbar = () => {
       <AppBar 
         position="fixed" 
         sx={{ 
-          width: 'calc(100% - 280px)', 
-          ml: '280px',
+          width: { xs: '100%', md: 'calc(100% - 280px)' },
+          ml: { xs: 0, md: '280px' },
           backgroundColor: '#fff',
           color: '#000',
           boxShadow: 'none',
@@ -36,12 +39,20 @@ const Navbar = () => {
         }}
       >
         <Toolbar>
-          <Typography variant="h6" className="flex-grow font-light tracking-wide">
+          <IconButton
+            edge="start"
+            onClick={onMenuClick}
+            sx={{ mr: 2, display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          <Typography variant="h6" className="grow font-light tracking-wide text-sm sm:text-base">
             Panel Administrativo
           </Typography>
           
-          <Box className="flex items-center gap-3">
-            <Typography variant="body2" className="text-gray-700">
+          <Box className="flex items-center gap-2 sm:gap-3">
+            <Typography variant="body2" className="text-gray-700 hidden sm:block">
               {user?.name}
             </Typography>
             <IconButton onClick={handleMenu}>

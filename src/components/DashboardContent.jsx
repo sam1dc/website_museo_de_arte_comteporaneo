@@ -9,7 +9,7 @@ const DashboardContent = () => {
   ];
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       <Typography variant="h4" className="font-light tracking-wide mb-8">
         Dashboard
       </Typography>

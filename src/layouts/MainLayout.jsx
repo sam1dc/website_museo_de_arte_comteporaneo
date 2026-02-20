@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
 
-const DashboardView = () => {
+const MainLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -27,4 +27,4 @@ const DashboardView = () => {
   );
 };
 
-export default DashboardView;
+export default MainLayout;
