@@ -86,27 +86,42 @@ const CatalogoView = () => {
           return (
             <Grid item xs={12} sm={6} md={4} lg={3} key={obra.id}>
               <Card 
-                className="cursor-pointer transition-all hover:shadow-lg"
+                className="cursor-pointer transition-all hover:shadow-lg flex flex-col"
                 onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.id}`)}
                 sx={{ 
                   borderRadius: 0,
                   boxShadow: 'none',
                   border: '1px solid #e5e5e5',
-                  '&:hover': { borderColor: '#000' }
+                  '&:hover': { borderColor: '#000' },
+                  height: '100%',
+                  minHeight: '600px'
                 }}
               >
                 <CardMedia
                   component="img"
-                  height="300"
                   image={obra.imagen}
                   alt={obra.titulo}
-                  sx={{ aspectRatio: '3/4', objectFit: 'cover' }}
+                  sx={{ 
+                    width: '100%',
+                    minWidth: '100%',
+                    height: '350px',
+                    objectFit: 'cover',
+                    flexShrink: 0
+                  }}
                 />
-                <CardContent className="p-6">
+                <CardContent className="p-6 flex-grow flex flex-col">
                   <Typography 
                     variant="h6" 
                     className="font-light tracking-wide mb-2 uppercase"
-                    sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
+                    sx={{ 
+                      fontSize: '0.875rem', 
+                      letterSpacing: '0.1em',
+                      minHeight: '2.5rem',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
                   >
                     {obra.titulo}
                   </Typography>
@@ -114,7 +129,11 @@ const CatalogoView = () => {
                   <Typography 
                     variant="body2" 
                     className="text-gray-600 mb-3 font-light"
-                    sx={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}
+                    sx={{ 
+                      fontSize: '0.75rem', 
+                      letterSpacing: '0.05em',
+                      minHeight: '1.5rem'
+                    }}
                   >
                     {artista?.nombre}
                   </Typography>
@@ -129,7 +148,8 @@ const CatalogoView = () => {
                         letterSpacing: '0.05em',
                         fontWeight: 300,
                         backgroundColor: '#f5f5f5',
-                        color: '#666'
+                        color: '#666',
+                        height: '24px'
                       }}
                     />
                     <Chip 
@@ -141,14 +161,15 @@ const CatalogoView = () => {
                         letterSpacing: '0.05em',
                         fontWeight: 300,
                         backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
-                        color: '#fff'
+                        color: '#fff',
+                        height: '24px'
                       }}
                     />
                   </Box>
 
                   <Typography 
                     variant="h6" 
-                    className="font-light"
+                    className="font-light mt-auto"
                     sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
                   >
                     ${obra.precio.toLocaleString()}

@@ -43,22 +43,22 @@ const DetalleObraView = () => {
         ← Volver al catálogo
       </Button>
 
-      <Grid container spacing={8}>
-        <Grid item xs={12} md={6}>
+      <Grid container spacing={6}>
+        <Grid item xs={12} lg={5}>
           <Box
             component="img"
             src={obra.imagen}
             alt={obra.titulo}
             sx={{
               width: '100%',
-              aspectRatio: '3/4',
+              height: '600px',
               objectFit: 'cover',
               border: '1px solid #e5e5e5'
             }}
           />
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={7}>
           <Box className="flex gap-2 mb-4">
             <Chip 
               label={genero?.nombre} 
@@ -127,7 +127,7 @@ const DetalleObraView = () => {
             </Typography>
           </Box>
 
-          <Box className="mb-6 grid grid-cols-2 gap-4">
+          <Box className="mb-6 grid grid-cols-3 gap-4">
             <Box>
               <Typography 
                 className="text-gray-600 font-light mb-1 uppercase"
