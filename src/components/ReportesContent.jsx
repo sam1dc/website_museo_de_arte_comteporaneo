@@ -93,7 +93,14 @@ const ReportesContent = () => {
             '& .MuiTab-root': {
               textTransform: 'uppercase',
               letterSpacing: '0.1em',
-              fontWeight: 300
+              fontWeight: 300,
+              color: '#666',
+              '&.Mui-selected': {
+                color: '#000'
+              }
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#000'
             }
           }}
         >
