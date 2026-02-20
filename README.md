@@ -1,16 +1,107 @@
-# React + Vite
+# Museo de Arte Contemporáneo (MAC) - Sistema de Gestión
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema web para la gestión y venta de obras de arte del Museo de Arte Contemporáneo.
 
-Currently, two official plugins are available:
+## Tecnologías
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18** + **Vite** - Framework y build tool
+- **React Router DOM** - Navegación y rutas
+- **Material-UI (MUI)** - Componentes UI
+- **Tailwind CSS** - Estilos utility-first
+- **ESLint** - Linting de código
 
-## React Compiler
+## Estructura del Proyecto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+src/
+├── layouts/          # Layouts de la aplicación
+│   └── MainLayout.jsx
+├── routes/           # Configuración de rutas
+│   ├── AppRoutes.jsx
+│   └── ProtectedRoute.jsx
+├── views/            # Vistas/páginas principales
+│   ├── LoginView.jsx
+│   ├── UsuariosView.jsx
+│   └── GenerosView.jsx
+├── components/       # Componentes reutilizables
+│   ├── Sidebar.jsx
+│   ├── Navbar.jsx
+│   ├── LoginForm.jsx
+│   ├── DashboardContent.jsx
+│   ├── GenerosContent.jsx
+│   └── ...
+├── hooks/            # Custom hooks
+│   ├── useAuth.jsx
+│   └── useForm.jsx
+└── utils/            # Utilidades y datos mock
+    └── mockData.js
+```
 
-## Expanding the ESLint configuration
+## Características Implementadas
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Autenticación
+- Login con persistencia de sesión (localStorage)
+- Rutas protegidas
+- Logout con redirección
+
+### Dashboard
+- Layout responsive con sidebar y navbar
+- Navegación entre módulos
+- Diseño minimalista siguiendo guías MAC
+
+### Módulos
+- **Dashboard**: Vista principal con estadísticas
+- **Usuarios**: Gestión de usuarios administradores
+- **Géneros**: CRUD de géneros artísticos con características
+
+## Guías de Diseño
+
+El proyecto sigue las guías de diseño documentadas en `DESIGN_GUIDELINES.md`:
+
+- Diseño minimalista (negro, blanco, grises)
+- Responsive design obligatorio
+- Tipografía ligera con tracking amplio
+- Bordes rectos (sin border-radius)
+
+## Instalación
+
+```bash
+npm install
+```
+
+## Desarrollo
+
+```bash
+npm run dev
+```
+
+## Credenciales de Prueba
+
+- **Email**: admin@museo.com
+- **Password**: admin123
+
+## Rutas
+
+- `/login` - Página de inicio de sesión
+- `/` - Dashboard (home)
+- `/usuarios` - Gestión de usuarios
+- `/generos` - Gestión de géneros artísticos
+
+## Próximos Módulos
+
+Según `proyecto.md`, los siguientes módulos están pendientes:
+
+1. Gestión de Artistas
+2. Gestión de Obras
+3. Gestión de Compradores
+4. Facturación
+5. Reportes/Consultas
+6. Catálogo Público
+7. Registro de Compradores
+8. Proceso de Compra
+
+## Notas
+
+- Actualmente usa datos estáticos (mock data)
+- La base de datos se integrará posteriormente
+- Todos los módulos siguen el patrón responsive establecido
