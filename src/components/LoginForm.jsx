@@ -1,7 +1,7 @@
-import { TextField, Button, Box, Link, Alert } from '@mui/material';
+import { TextField, Button, Box, Link } from '@mui/material';
 import useForm from '../hooks/useForm';
 
-const LoginForm = ({ onSubmit, error }) => {
+const LoginForm = ({ onSubmit }) => {
   const { values, handleChange } = useForm({
     email: '',
     password: ''
@@ -49,8 +49,6 @@ const LoginForm = ({ onSubmit, error }) => {
           '& .MuiInputLabel-root.Mui-focused': { color: '#000' },
         }}
       />
-
-      {error && <Alert severity="error" className="border-l-4 border-red-600">{error}</Alert>}
 
       <Button
         type="submit"

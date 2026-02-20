@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, Alert } from '@mui/material';
 import LoginForm from '../components/LoginForm';
+import { useAuth } from '../hooks/useAuth';
 
 const LoginView = () => {
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleLogin = (credentials) => {
-    console.log('Login attempt:', credentials);
+    const success = login(credentials.email, credentials.password);
+    if (!success) {
+      setError('Credenciales incorrectas');
+    }
   };
 
   return (
@@ -32,7 +37,14 @@ const LoginView = () => {
               Museo de Arte Contemporáneo
             </Typography>
           </Box>
-          <LoginForm onSubmit={handleLogin} error={error} />
+          
+          {error && (
+            <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          
+          <LoginForm onSubmit={handleLogin} />
         </Box>
       </Container>
     </Box>
