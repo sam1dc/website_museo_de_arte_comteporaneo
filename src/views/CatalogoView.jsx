@@ -186,14 +186,14 @@ const CatalogoView = () => {
                     }}
                   />
                   <Chip 
-                    label={obra.estatus === 'disponible' ? 'Disponible' : 'Vendida'} 
+                    label={obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'} 
                     size="small"
                     sx={{
                       borderRadius: 0,
                       fontSize: '0.65rem',
                       letterSpacing: '0.05em',
                       fontWeight: 300,
-                      backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
+                      backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999',
                       color: '#fff',
                       height: '24px'
                     }}

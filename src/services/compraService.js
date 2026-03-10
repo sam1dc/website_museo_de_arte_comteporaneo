@@ -7,8 +7,8 @@ export const compraService = {
     body: JSON.stringify(datos),
   }),
 
-  obtenerMisCompras: async () => {
-    const response = await apiCall('/mis-compras');
+  obtenerMisCompras: async (compradorId) => {
+    const response = await apiCall(`/mis-compras?comprador_id=${compradorId}`);
     return response.data || response;
   },
 };

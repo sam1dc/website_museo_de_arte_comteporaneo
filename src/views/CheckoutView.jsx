@@ -20,7 +20,8 @@ const CheckoutView = () => {
     numeroTarjeta: '',
     fechaExpiracion: '',
     cvv: '',
-    nombreTarjeta: ''
+    nombreTarjeta: '',
+    codigoSeguridad: ''
   });
   const cargadoRef = useRef(false);
   const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
@@ -38,9 +39,11 @@ const CheckoutView = () => {
       try {
         setCargando(true);
         const obraData = await catalogoService.obtenerObraDetalle(id);
+        console.log('Obra data:', obraData);
+        console.log('Estatus:', obraData.estatus);
         setObra(obraData);
         
-        if (obraData.estatus !== 'disponible') {
+        if (obraData.estatus && obraData.estatus.toUpperCase() !== 'DISPONIBLE') {
           setError('Obra no disponible');
         }
       } catch (err) {
@@ -60,21 +63,15 @@ const CheckoutView = () => {
       setError(null);
 
       const solicitud = {
-        obra_id: obra.id,
-        comprador_id: comprador.id,
-        cantidad: 1,
-        precio_total: iva + obra.precio,
-        direccion_envio: formData.direccion,
-        ciudad: formData.ciudad,
-        codigo_postal: formData.codigoPostal,
-        pais: formData.pais,
-        forma_pago: formaPago
+        obra_id: obra.obra_id,
+        comprador_id: comprador.data?.comprador_id || comprador.comprador_id,
+        codigo_seguridad: formData.codigoSeguridad
       };
 
       const response = await compraService.crearSolicitud(solicitud);
       
       navigate('/museo-de-arte-contemporaneo/confirmacion', {
-        state: { obra, total: iva + obra.precio, solicitud: response }
+        state: { obra, total, solicitud: response }
       });
     } catch (err) {
       setError(err.message || 'Error al procesar la compra');
@@ -117,7 +114,7 @@ const CheckoutView = () => {
     );
   }
 
-  if (!obra || obra.estatus !== 'disponible') {
+  if (!obra || (obra.estatus && obra.estatus.toUpperCase() !== 'DISPONIBLE')) {
     return (
       <Container maxWidth="xl" className="py-16">
         <Typography>Obra no disponible</Typography>
@@ -125,8 +122,9 @@ const CheckoutView = () => {
     );
   }
 
-  const iva = obra.precio * 0.16;
-  const total = obra.precio + iva;
+  const precioBase = parseFloat(obra.precio_usd || 0);
+  const iva = precioBase * 0.16;
+  const total = precioBase + iva;
 
   const inputStyles = {
     '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
@@ -237,6 +235,20 @@ const CheckoutView = () => {
                   />
                 </>
               )}
+              
+              <TextField
+                label="Código de Seguridad (6 dígitos)"
+                variant="standard"
+                fullWidth
+                required
+                name="codigoSeguridad"
+                value={formData.codigoSeguridad}
+                onChange={handleInputChange}
+                placeholder="123456"
+                helperText="Código de seguridad del comprador"
+                inputProps={{ maxLength: 6 }}
+                sx={inputStyles}
+              />
             </Box>
           </Box>
 
@@ -310,8 +322,8 @@ const CheckoutView = () => {
             <Box className="mb-6">
               <Box
                 component="img"
-                src={obra.imagen}
-                alt={obra.titulo}
+                src={obra.foto_url}
+                alt={obra.nombre}
                 sx={{
                   width: '100%',
                   aspectRatio: '3/4',
@@ -323,13 +335,13 @@ const CheckoutView = () => {
                 className="font-light tracking-wide mb-1 uppercase"
                 sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
               >
-                {obra.titulo}
+                {obra.nombre}
               </Typography>
               <Typography 
                 className="text-gray-600 font-light"
                 sx={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}
               >
-                {artista?.nombre}
+                {artista?.nombre_completo}
               </Typography>
             </Box>
 
@@ -339,7 +351,7 @@ const CheckoutView = () => {
                   Subtotal
                 </Typography>
                 <Typography className="font-light text-sm">
-                  ${obra.precio.toLocaleString()}
+                  ${precioBase.toLocaleString()}
                 </Typography>
               </Box>
               <Box className="flex justify-between mb-4">
