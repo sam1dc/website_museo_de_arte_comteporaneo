@@ -8,6 +8,9 @@ const CheckoutView = () => {
   const navigate = useNavigate();
   const [obra, setObra] = useState(null);
   const [artista, setArtista] = useState(null);
+  const [tarjetasGuardadas, setTarjetasGuardadas] = useState([]);
+  const [usarTarjetaGuardada, setUsarTarjetaGuardada] = useState(true);
+  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState(null);
@@ -45,6 +48,17 @@ const CheckoutView = () => {
         
         if (obraData.estatus && obraData.estatus.toUpperCase() !== 'DISPONIBLE') {
           setError('Obra no disponible');
+        }
+
+        // Cargar tarjetas guardadas del comprador
+        if (comprador?.data?.tarjetas && comprador.data.tarjetas.length > 0) {
+          setTarjetasGuardadas(comprador.data.tarjetas);
+          setTarjetaSeleccionada(comprador.data.tarjetas[0].tarjeta_id);
+        } else if (comprador?.tarjetas && comprador.tarjetas.length > 0) {
+          setTarjetasGuardadas(comprador.tarjetas);
+          setTarjetaSeleccionada(comprador.tarjetas[0].tarjeta_id);
+        } else {
+          setUsarTarjetaGuardada(false);
         }
       } catch (err) {
         setError('Obra no encontrada');
@@ -200,45 +214,98 @@ const CheckoutView = () => {
 
               {formaPago === 'tarjeta' && (
                 <>
-                  <TextField
-                    label="Número de Tarjeta"
-                    variant="standard"
-                    fullWidth
-                    placeholder="1234 5678 9012 3456"
-                    name="numeroTarjeta"
-                    value={formData.numeroTarjeta}
-                    onChange={handleInputChange}
-                    sx={inputStyles}
-                  />
-                  <Box className="grid grid-cols-2 gap-4">
-                    <TextField
-                      label="Fecha de Expiración"
-                      variant="standard"
-                      placeholder="MM/AA"
-                      name="fechaExpiracion"
-                      value={formData.fechaExpiracion}
-                      onChange={handleInputChange}
-                      sx={inputStyles}
-                    />
-                    <TextField
-                      label="CVV"
-                      variant="standard"
-                      placeholder="123"
-                      name="cvv"
-                      value={formData.cvv}
-                      onChange={handleInputChange}
-                      sx={inputStyles}
-                    />
-                  </Box>
-                  <TextField
-                    label="Nombre en la Tarjeta"
-                    variant="standard"
-                    fullWidth
-                    name="nombreTarjeta"
-                    value={formData.nombreTarjeta}
-                    onChange={handleInputChange}
-                    sx={inputStyles}
-                  />
+                  {tarjetasGuardadas.length > 0 && (
+                    <Box className="mb-4">
+                      <TextField
+                        select
+                        label="Usar tarjeta guardada"
+                        value={usarTarjetaGuardada ? 'si' : 'no'}
+                        onChange={(e) => setUsarTarjetaGuardada(e.target.value === 'si')}
+                        variant="standard"
+                        fullWidth
+                        sx={inputStyles}
+                        SelectProps={{ native: true }}
+                      >
+                        <option value="si">Sí, usar tarjeta guardada</option>
+                        <option value="no">No, ingresar nueva tarjeta</option>
+                      </TextField>
+                    </Box>
+                  )}
+
+                  {usarTarjetaGuardada && tarjetasGuardadas.length > 0 ? (
+                    <Box className="space-y-4">
+                      {tarjetasGuardadas.map((tarjeta) => (
+                        <Box
+                          key={tarjeta.tarjeta_id}
+                          onClick={() => setTarjetaSeleccionada(tarjeta.tarjeta_id)}
+                          className={`border p-4 cursor-pointer transition-colors ${
+                            tarjetaSeleccionada === tarjeta.tarjeta_id ? 'border-black bg-gray-50' : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <Box className="flex items-center justify-between">
+                            <Box>
+                              <Typography className="font-medium text-sm">
+                                {tarjeta.marca || 'Tarjeta'} •••• {tarjeta.ultimos4}
+                              </Typography>
+                              <Typography variant="caption" className="text-gray-600">
+                                {tarjeta.titular}
+                              </Typography>
+                              <Typography variant="caption" className="text-gray-500 block">
+                                Vence: {tarjeta.exp_mes}/{tarjeta.exp_anio}
+                              </Typography>
+                            </Box>
+                            {tarjetaSeleccionada === tarjeta.tarjeta_id && (
+                              <Box className="w-5 h-5 rounded-full bg-black flex items-center justify-center">
+                                <Box className="w-2 h-2 rounded-full bg-white" />
+                              </Box>
+                            )}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <>
+                      <TextField
+                        label="Número de Tarjeta"
+                        variant="standard"
+                        fullWidth
+                        placeholder="1234 5678 9012 3456"
+                        name="numeroTarjeta"
+                        value={formData.numeroTarjeta}
+                        onChange={handleInputChange}
+                        sx={inputStyles}
+                      />
+                      <Box className="grid grid-cols-2 gap-4">
+                        <TextField
+                          label="Fecha de Expiración"
+                          variant="standard"
+                          placeholder="MM/AA"
+                          name="fechaExpiracion"
+                          value={formData.fechaExpiracion}
+                          onChange={handleInputChange}
+                          sx={inputStyles}
+                        />
+                        <TextField
+                          label="CVV"
+                          variant="standard"
+                          placeholder="123"
+                          name="cvv"
+                          value={formData.cvv}
+                          onChange={handleInputChange}
+                          sx={inputStyles}
+                        />
+                      </Box>
+                      <TextField
+                        label="Nombre en la Tarjeta"
+                        variant="standard"
+                        fullWidth
+                        name="nombreTarjeta"
+                        value={formData.nombreTarjeta}
+                        onChange={handleInputChange}
+                        sx={inputStyles}
+                      />
+                    </>
+                  )}
                 </>
               )}
               
