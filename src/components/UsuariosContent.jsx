@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Lock as LockIcon } from '@mui/icons-material';
 import { usuariosAdminService } from '../services';
 
@@ -13,7 +13,11 @@ const UsuariosContent = () => {
   const cargadoRef = useRef(false);
   const [currentUsuario, setCurrentUsuario] = useState({
     nombre: '',
+    apellido: '',
     email: '',
+    telefono: '',
+    rol: '',
+    estado: 'activo',
     password: ''
   });
 
@@ -44,7 +48,11 @@ const UsuariosContent = () => {
     } else {
       setCurrentUsuario({
         nombre: '',
+        apellido: '',
         email: '',
+        telefono: '',
+        rol: '',
+        estado: 'activo',
         password: ''
       });
       setEditMode(false);
@@ -139,8 +147,10 @@ const UsuariosContent = () => {
         <Table sx={{ width: '100%' }}>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#fafafa' }}>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nombre</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nombre Completo</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Rol</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Estado</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Teléfono</TableCell>
               <TableCell align="right" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -148,9 +158,24 @@ const UsuariosContent = () => {
             {usuarios.map((usuario) => (
               <TableRow key={usuario.id} hover>
                 <TableCell>
-                  <Typography className="font-medium">{usuario.nombre}</Typography>
+                  <Typography className="font-medium">{usuario.nombre_completo}</Typography>
                 </TableCell>
-                <TableCell>{usuario.email}</TableCell>
+                <TableCell>{usuario.rol}</TableCell>
+                <TableCell>
+                  <Chip 
+                    label={usuario.estado} 
+                    size="small"
+                    sx={{ 
+                      backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
+                      color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
+                      borderRadius: 0,
+                      textTransform: 'uppercase',
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.05em'
+                    }}
+                  />
+                </TableCell>
+                <TableCell>{usuario.telefono}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={() => handleOpen(usuario)}>
                     <EditIcon fontSize="small" />
@@ -171,8 +196,28 @@ const UsuariosContent = () => {
           <Paper key={usuario.id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
             <Box className="flex justify-between items-start mb-3">
               <Box>
-                <Typography className="font-medium text-lg">{usuario.nombre}</Typography>
+                <Typography className="font-medium text-lg">{usuario.nombre_completo}</Typography>
                 <Typography variant="body2" className="text-gray-600">{usuario.email}</Typography>
+                <Typography variant="body2" className="text-gray-600 mt-1">
+                  <span className="font-medium">Rol:</span> {usuario.rol}
+                </Typography>
+                <Typography variant="body2" className="text-gray-600">
+                  <span className="font-medium">Tel:</span> {usuario.telefono}
+                </Typography>
+                <Box className="mt-2">
+                  <Chip 
+                    label={usuario.estado} 
+                    size="small"
+                    sx={{ 
+                      backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
+                      color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
+                      borderRadius: 0,
+                      textTransform: 'uppercase',
+                      fontSize: '0.7rem',
+                      letterSpacing: '0.05em'
+                    }}
+                  />
+                </Box>
               </Box>
               <Box>
                 <IconButton size="small" onClick={() => handleOpen(usuario)}>
@@ -197,9 +242,16 @@ const UsuariosContent = () => {
         <DialogContent>
           <Box className="flex flex-col gap-6 mt-4">
             <TextField
-              label="Nombre Completo"
+              label="Nombre"
               value={currentUsuario.nombre}
               onChange={(e) => handleChange('nombre', e.target.value)}
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              label="Apellido"
+              value={currentUsuario.apellido}
+              onChange={(e) => handleChange('apellido', e.target.value)}
               fullWidth
               variant="standard"
             />
@@ -211,6 +263,35 @@ const UsuariosContent = () => {
               fullWidth
               variant="standard"
             />
+            <TextField
+              label="Teléfono"
+              value={currentUsuario.telefono}
+              onChange={(e) => handleChange('telefono', e.target.value)}
+              fullWidth
+              variant="standard"
+            />
+            <FormControl fullWidth variant="standard">
+              <InputLabel>Rol</InputLabel>
+              <Select
+                value={currentUsuario.rol}
+                onChange={(e) => handleChange('rol', e.target.value)}
+                label="Rol"
+              >
+                <MenuItem value="Administrador">Administrador</MenuItem>
+                <MenuItem value="Empleado">Empleado</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth variant="standard">
+              <InputLabel>Estado</InputLabel>
+              <Select
+                value={currentUsuario.estado}
+                onChange={(e) => handleChange('estado', e.target.value)}
+                label="Estado"
+              >
+                <MenuItem value="activo">Activo</MenuItem>
+                <MenuItem value="inactivo">Inactivo</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               label={editMode ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña'}
               type="password"

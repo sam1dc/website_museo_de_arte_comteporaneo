@@ -54,8 +54,8 @@ const GenerosContent = () => {
       setError(null);
 
       if (editMode) {
-        await generosAdminService.actualizar(currentGenero.id, currentGenero);
-        setGeneros(generos.map(g => g.id === currentGenero.id ? currentGenero : g));
+        await generosAdminService.actualizar(currentGenero.genero_id, currentGenero);
+        setGeneros(generos.map(g => g.genero_id === currentGenero.genero_id ? currentGenero : g));
       } else {
         const nuevoGenero = await generosAdminService.crear(currentGenero);
         setGeneros([...generos, nuevoGenero]);
@@ -73,7 +73,7 @@ const GenerosContent = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este género?')) {
       try {
         await generosAdminService.eliminar(id);
-        setGeneros(generos.filter(g => g.id !== id));
+        setGeneros(generos.filter(g => g.genero_id !== id));
       } catch (err) {
         setError('Error al eliminar el género');
         console.error(err);
@@ -134,7 +134,7 @@ const GenerosContent = () => {
           </TableHead>
           <TableBody>
             {generos.map((genero) => (
-              <TableRow key={genero.id} hover>
+              <TableRow key={genero.genero_id} hover>
                 <TableCell>
                   <Typography className="font-medium">{genero.nombre}</Typography>
                 </TableCell>
@@ -147,7 +147,7 @@ const GenerosContent = () => {
                   <IconButton size="small" onClick={() => handleOpen(genero)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(genero.id)}>
+                  <IconButton size="small" onClick={() => handleDelete(genero.genero_id)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -160,14 +160,14 @@ const GenerosContent = () => {
       {/* Vista Mobile */}
       <Box className="block md:hidden space-y-4">
         {generos.map((genero) => (
-          <Paper key={genero.id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
+          <Paper key={genero.genero_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
             <Box className="flex justify-between items-start mb-3">
               <Typography className="font-medium text-lg">{genero.nombre}</Typography>
               <Box>
                 <IconButton size="small" onClick={() => handleOpen(genero)}>
                   <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small" onClick={() => handleDelete(genero.id)}>
+                <IconButton size="small" onClick={() => handleDelete(genero.genero_id)}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Box>

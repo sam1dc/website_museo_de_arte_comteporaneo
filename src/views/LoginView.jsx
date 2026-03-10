@@ -20,8 +20,8 @@ const LoginView = () => {
       
       const response = await authService.login(credentials.email, credentials.password);
       
-      // Guardar token y datos del usuario
-      localStorage.setItem('compradorAuth', JSON.stringify(response));
+      // Actualizar el contexto de autenticación
+      login(response);
       
       // Redirigir según el tipo de usuario
       if (response.tipo === 'admin' || response.tipo === 'empleado') {
@@ -44,8 +44,8 @@ const LoginView = () => {
       
       const response = await authService.registro(data);
       
-      // Guardar datos del nuevo usuario
-      localStorage.setItem('compradorAuth', JSON.stringify(response));
+      // Actualizar el contexto de autenticación
+      login(response);
       navigate('/museo-de-arte-contemporaneo');
     } catch (err) {
       setError(err.message || 'Error al registrarse');

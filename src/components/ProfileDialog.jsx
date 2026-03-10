@@ -19,10 +19,10 @@ const ProfileDialog = ({ open, onClose }) => {
         <Box className="flex flex-col gap-4">
           <Box>
             <Typography variant="caption" className="text-gray-600 uppercase tracking-wider text-xs">
-              Nombre
+              Nombre Completo
             </Typography>
             <Typography variant="body1" className="mt-1">
-              {user?.name}
+              {user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres || 'N/A'}
             </Typography>
           </Box>
           <Box>
@@ -30,7 +30,7 @@ const ProfileDialog = ({ open, onClose }) => {
               Email
             </Typography>
             <Typography variant="body1" className="mt-1">
-              {user?.email}
+              {user?.data?.email || 'N/A'}
             </Typography>
           </Box>
           <Box>
@@ -38,9 +38,19 @@ const ProfileDialog = ({ open, onClose }) => {
               Rol
             </Typography>
             <Typography variant="body1" className="mt-1">
-              {user?.role}
+              {user?.data?.rol || 'N/A'}
             </Typography>
           </Box>
+          {user?.data?.telefono && (
+            <Box>
+              <Typography variant="caption" className="text-gray-600 uppercase tracking-wider text-xs">
+                Teléfono
+              </Typography>
+              <Typography variant="body1" className="mt-1">
+                {user.data.telefono}
+              </Typography>
+            </Box>
+          )}
         </Box>
       </DialogContent>
     </Dialog>

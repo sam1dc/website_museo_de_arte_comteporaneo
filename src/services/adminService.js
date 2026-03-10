@@ -193,17 +193,23 @@ export const solicitudesCompraAdminService = {
 
 // Reportes
 export const reportesAdminService = {
-  obrasVendidas: async () => {
-    const response = await apiCall('/admin/reportes/obras-vendidas');
+  obrasVendidas: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `/admin/reportes/obras-vendidas${queryString ? `?${queryString}` : ''}`;
+    const response = await apiCall(url);
     return response.data || response;
   },
-  facturacion: async () => {
-    const response = await apiCall('/admin/reportes/facturacion');
-    return response.data || response;
+  facturacion: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `/admin/reportes/facturacion${queryString ? `?${queryString}` : ''}`;
+    const response = await apiCall(url);
+    return response;
   },
-  membresias: async () => {
-    const response = await apiCall('/admin/reportes/membresias');
-    return response.data || response;
+  membresias: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `/admin/reportes/membresias${queryString ? `?${queryString}` : ''}`;
+    const response = await apiCall(url);
+    return response;
   },
   perfil: async () => {
     const response = await apiCall('/admin/perfil');

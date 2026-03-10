@@ -53,11 +53,11 @@ const Navbar = ({ onMenuClick }) => {
           
           <Box className="flex items-center gap-2 sm:gap-3">
             <Typography variant="body2" className="text-gray-700 hidden sm:block">
-              {user?.name}
+              {user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres}
             </Typography>
             <IconButton onClick={handleMenu}>
               <Avatar sx={{ width: 32, height: 32, backgroundColor: '#000' }}>
-                {user?.name?.charAt(0)}
+                {(user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres)?.charAt(0)}
               </Avatar>
             </IconButton>
           </Box>

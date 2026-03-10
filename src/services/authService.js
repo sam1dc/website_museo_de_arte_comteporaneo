@@ -31,4 +31,7 @@ export const authService = {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   }),
+
+  // Obtener perfil del usuario autenticado
+  obtenerPerfil: (empleadoId) => apiCall(`/admin/perfil?empleado_id=${empleadoId}`),
 };

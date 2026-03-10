@@ -205,7 +205,7 @@ const CatalogoView = () => {
                   className="font-light mt-auto"
                   sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
                 >
-                  ${obra.precio.toLocaleString()}
+                  ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
                 </Typography>
               </CardContent>
             </Card>
