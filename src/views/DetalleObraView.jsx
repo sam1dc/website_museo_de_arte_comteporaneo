@@ -21,11 +21,12 @@ const DetalleObraView = () => {
       try {
         setCargando(true);
         const obraData = await catalogoService.obtenerObraDetalle(id);
+        console.log('Obra data:', obraData);
         setObra(obraData);
         
-        if (obraData.artista_id) {
-          const artistaData = await artistaService.obtenerDetalle(obraData.artista_id);
-          setArtista(artistaData);
+        // El artista ya viene en la obra
+        if (obraData.artista) {
+          setArtista(obraData.artista);
         }
       } catch (err) {
         setError('Obra no encontrada');

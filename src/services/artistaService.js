@@ -2,5 +2,8 @@
 import { apiCall } from './api';
 
 export const artistaService = {
-  obtenerDetalle: (id) => apiCall(`/artistas/${id}`),
+  obtenerDetalle: async (id) => {
+    const response = await apiCall(`/artistas/${id}`);
+    return response.data || response;
+  },
 };

@@ -69,14 +69,14 @@ const ArtistaPerfilView = () => {
           className="font-extralight tracking-widest text-black mb-4 uppercase"
           sx={{ letterSpacing: '0.2em' }}
         >
-          {artista.nombre}
+          {artista.nombre_completo}
         </Typography>
         <Box className="w-24 h-px bg-black mb-6" />
         
         <Box className="flex gap-2 mb-6">
           {artista.generos?.map(genero => (
             <Chip 
-              key={genero.id}
+              key={genero.genero_id}
               label={genero.nombre} 
               sx={{
                 borderRadius: 0,
@@ -106,9 +106,9 @@ const ArtistaPerfilView = () => {
                   className="text-gray-600 font-light mb-1 uppercase"
                   sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
                 >
-                  País
+                  Nacionalidad
                 </Typography>
-                <Typography className="font-light">{artista.pais}</Typography>
+                <Typography className="font-light">{artista.nacionalidad}</Typography>
               </Box>
               <Box>
                 <Typography 
@@ -139,10 +139,10 @@ const ArtistaPerfilView = () => {
 
       <Grid container spacing={4}>
         {artista.obras?.map(obra => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.obra_id}>
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg"
-              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.id}`)}
+              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
               sx={{ 
                 borderRadius: 0,
                 boxShadow: 'none',
@@ -153,8 +153,8 @@ const ArtistaPerfilView = () => {
               <CardMedia
                 component="img"
                 height="300"
-                image={obra.imagen}
-                alt={obra.titulo}
+                image={obra.foto_url}
+                alt={obra.nombre}
                 sx={{ aspectRatio: '3/4', objectFit: 'cover' }}
               />
               <CardContent className="p-6">
@@ -163,7 +163,7 @@ const ArtistaPerfilView = () => {
                   className="font-light tracking-wide mb-2 uppercase"
                   sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
                 >
-                  {obra.titulo}
+                  {obra.nombre}
                 </Typography>
 
                 <Box className="flex items-center justify-between mb-3">
@@ -180,14 +180,14 @@ const ArtistaPerfilView = () => {
                     }}
                   />
                   <Chip 
-                    label={obra.estatus === 'disponible' ? 'Disponible' : 'Vendida'} 
+                    label={obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'} 
                     size="small"
                     sx={{
                       borderRadius: 0,
                       fontSize: '0.65rem',
                       letterSpacing: '0.05em',
                       fontWeight: 300,
-                      backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
+                      backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999',
                       color: '#fff'
                     }}
                   />
@@ -198,7 +198,7 @@ const ArtistaPerfilView = () => {
                   className="font-light"
                   sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
                 >
-                  ${obra.precio.toLocaleString()}
+                  ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
                 </Typography>
               </CardContent>
             </Card>

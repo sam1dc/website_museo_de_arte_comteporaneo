@@ -7,8 +7,11 @@ const CatalogoView = () => {
   const navigate = useNavigate();
   const [obras, setObras] = useState([]);
   const [generos, setGeneros] = useState([]);
+  const [artistas, setArtistas] = useState([]);
   const [filtroGenero, setFiltroGenero] = useState('todos');
+  const [filtroArtista, setFiltroArtista] = useState('todos');
   const [filtroEstatus, setFiltroEstatus] = useState('todos');
+  const [filtroPrecio, setFiltroPrecio] = useState('todos');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const cargadoRef = useRef(false);
@@ -26,6 +29,17 @@ const CatalogoView = () => {
         ]);
         setObras(obrasData);
         setGeneros(generosData);
+        
+        // Extraer artistas únicos de las obras
+        const artistasUnicos = obrasData
+          .filter(obra => obra.artista)
+          .reduce((acc, obra) => {
+            if (!acc.find(a => a.artista_id === obra.artista.artista_id)) {
+              acc.push(obra.artista);
+            }
+            return acc;
+          }, []);
+        setArtistas(artistasUnicos);
       } catch (err) {
         setError('Error al cargar las obras');
         console.error(err);
@@ -39,8 +53,20 @@ const CatalogoView = () => {
 
   const obrasFiltradas = obras.filter(obra => {
     const cumpleGenero = filtroGenero === 'todos' || obra.genero_id === parseInt(filtroGenero);
+    const cumpleArtista = filtroArtista === 'todos' || obra.artista_id === parseInt(filtroArtista);
     const cumpleEstatus = filtroEstatus === 'todos' || obra.estatus?.toUpperCase() === filtroEstatus.toUpperCase();
-    return cumpleGenero && cumpleEstatus;
+    
+    let cumplePrecio = true;
+    if (filtroPrecio !== 'todos' && obra.estatus === 'DISPONIBLE') {
+      const precio = parseFloat(obra.precio_usd);
+      switch(filtroPrecio) {
+        case 'bajo': cumplePrecio = precio < 5000; break;
+        case 'medio': cumplePrecio = precio >= 5000 && precio <= 15000; break;
+        case 'alto': cumplePrecio = precio > 15000; break;
+      }
+    }
+    
+    return cumpleGenero && cumpleArtista && cumpleEstatus && cumplePrecio;
   });
 
   return (
@@ -84,6 +110,27 @@ const CatalogoView = () => {
 
         <TextField
           select
+          label="Artista"
+          value={filtroArtista}
+          onChange={(e) => setFiltroArtista(e.target.value)}
+          variant="standard"
+          className="w-full sm:w-48"
+          sx={{
+            '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
+            '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
+            '& .MuiInput-underline:after': { borderBottomColor: '#000' },
+            '& .MuiInputLabel-root': { color: '#666', fontSize: '0.875rem', letterSpacing: '0.05em' },
+            '& .MuiInputLabel-root.Mui-focused': { color: '#000' },
+          }}
+        >
+          <MenuItem value="todos">Todos</MenuItem>
+          {artistas.map(artista => (
+            <MenuItem key={artista.artista_id} value={artista.artista_id}>{artista.nombre_completo}</MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          select
           label="Disponibilidad"
           value={filtroEstatus}
           onChange={(e) => setFiltroEstatus(e.target.value)}
@@ -100,6 +147,27 @@ const CatalogoView = () => {
           <MenuItem value="todos">Todas</MenuItem>
           <MenuItem value="DISPONIBLE">Disponibles</MenuItem>
           <MenuItem value="VENDIDA">Vendidas</MenuItem>
+        </TextField>
+
+        <TextField
+          select
+          label="Rango de Precio"
+          value={filtroPrecio}
+          onChange={(e) => setFiltroPrecio(e.target.value)}
+          variant="standard"
+          className="w-full sm:w-48"
+          sx={{
+            '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
+            '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
+            '& .MuiInput-underline:after': { borderBottomColor: '#000' },
+            '& .MuiInputLabel-root': { color: '#666', fontSize: '0.875rem', letterSpacing: '0.05em' },
+            '& .MuiInputLabel-root.Mui-focused': { color: '#000' },
+          }}
+        >
+          <MenuItem value="todos">Todos</MenuItem>
+          <MenuItem value="bajo">Menos de $5,000</MenuItem>
+          <MenuItem value="medio">$5,000 - $15,000</MenuItem>
+          <MenuItem value="alto">Más de $15,000</MenuItem>
         </TextField>
       </Box>
 
