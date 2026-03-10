@@ -71,7 +71,13 @@ const CheckoutView = () => {
       const response = await compraService.crearSolicitud(solicitud);
       
       navigate('/museo-de-arte-contemporaneo/confirmacion', {
-        state: { obra, total, solicitud: response }
+        state: { 
+          obra, 
+          total, 
+          comisionMuseo, 
+          precioBase, 
+          solicitud: response 
+        }
       });
     } catch (err) {
       setError(err.message || 'Error al procesar la compra');
@@ -123,8 +129,8 @@ const CheckoutView = () => {
   }
 
   const precioBase = parseFloat(obra.precio_usd || 0);
-  const iva = precioBase * 0.16;
-  const total = precioBase + iva;
+  const comisionMuseo = precioBase * (obra.artista?.porcentaje_comision || 0.07);
+  const total = precioBase + comisionMuseo;
 
   const inputStyles = {
     '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
@@ -348,28 +354,34 @@ const CheckoutView = () => {
             <Box className="border-t border-gray-200 pt-4 mb-4">
               <Box className="flex justify-between mb-2">
                 <Typography className="text-gray-600 font-light text-sm">
-                  Subtotal
+                  Precio Obra
                 </Typography>
                 <Typography className="font-light text-sm">
-                  ${precioBase.toLocaleString()}
+                  ${precioBase.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              <Box className="flex justify-between mb-4">
+              <Box className="flex justify-between mb-4 pb-4 border-b border-gray-200">
                 <Typography className="text-gray-600 font-light text-sm">
-                  IVA (16%)
+                  Comisión Museo ({((obra.artista?.porcentaje_comision || 0.07) * 100).toFixed(0)}%)
                 </Typography>
                 <Typography className="font-light text-sm">
-                  ${iva.toLocaleString()}
+                  ${comisionMuseo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              <Box className="flex justify-between border-t border-gray-200 pt-4">
+              <Box className="flex justify-between">
                 <Typography className="font-light uppercase" sx={{ letterSpacing: '0.1em' }}>
                   Total
                 </Typography>
                 <Typography className="font-light text-xl">
-                  ${total.toLocaleString()}
+                  ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
+              <Typography 
+                className="text-gray-500 font-light mt-2"
+                sx={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}
+              >
+                *IVA será calculado en la factura
+              </Typography>
             </Box>
 
             <Button
@@ -391,6 +403,13 @@ const CheckoutView = () => {
             >
               {enviando ? <CircularProgress size={20} color="inherit" /> : 'Confirmar Compra'}
             </Button>
+
+            <Typography 
+              className="text-gray-500 font-light text-center mt-4"
+              sx={{ fontSize: '0.7rem', letterSpacing: '0.05em', lineHeight: 1.6 }}
+            >
+              La factura será generada por un administrador del museo una vez confirmada la compra.
+            </Typography>
           </Paper>
         </Grid>
       </Grid>

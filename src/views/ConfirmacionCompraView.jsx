@@ -90,9 +90,24 @@ const ConfirmacionCompraView = () => {
               className="font-light"
               sx={{ fontSize: '1.3rem' }}
             >
-              ${total?.toLocaleString()}
+              ${total?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Typography>
+            <Typography 
+              className="text-gray-500 font-light mt-2"
+              sx={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}
+            >
+              (IVA será calculado en la factura)
             </Typography>
           </Box>
+        </Box>
+
+        <Box className="bg-blue-50 border border-blue-200 p-4 mb-8 text-left">
+          <Typography 
+            className="text-blue-900 font-light"
+            sx={{ fontSize: '0.75rem', letterSpacing: '0.05em', lineHeight: 1.6 }}
+          >
+            <strong>Nota:</strong> La factura oficial con el IVA incluido será generada por un administrador del museo y enviada a tu correo electrónico en las próximas 24-48 horas.
+          </Typography>
         </Box>
 
         <Box className="flex flex-col sm:flex-row gap-4 justify-center">
