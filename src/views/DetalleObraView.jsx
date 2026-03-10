@@ -1,22 +1,42 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, Grid, Button, Chip } from '@mui/material';
-import { MOCK_OBRAS, MOCK_ARTISTAS, MOCK_GENEROS } from '../utils/mockData';
+import { Container, Typography, Box, Grid, Button, Chip, CircularProgress } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { catalogoService, artistaService } from '../services';
 
 const DetalleObraView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const obra = MOCK_OBRAS.find(o => o.id === parseInt(id));
-  const artista = obra ? MOCK_ARTISTAS.find(a => a.id === obra.artistaId) : null;
-  const genero = obra ? MOCK_GENEROS.find(g => g.id === obra.generoId) : null;
+  const [obra, setObra] = useState(null);
+  const [artista, setArtista] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const cargadoRef = useRef(false);
   const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
 
-  if (!obra) {
-    return (
-      <Container maxWidth="xl" className="py-16">
-        <Typography>Obra no encontrada</Typography>
-      </Container>
-    );
-  }
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarDatos = async () => {
+      try {
+        setCargando(true);
+        const obraData = await catalogoService.obtenerObraDetalle(id);
+        setObra(obraData);
+        
+        if (obraData.artista_id) {
+          const artistaData = await artistaService.obtenerDetalle(obraData.artista_id);
+          setArtista(artistaData);
+        }
+      } catch (err) {
+        setError('Obra no encontrada');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, [id]);
 
   const handleComprar = () => {
     if (!comprador) {
@@ -28,6 +48,21 @@ const DetalleObraView = () => {
 
   return (
     <Container maxWidth="xl" className="py-16">
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Box className="text-center py-16">
+          <Typography className="text-red-500 font-light tracking-wide mb-4">
+            {error}
+          </Typography>
+          <Button onClick={() => navigate('/museo-de-arte-contemporaneo')}>
+            Volver al catálogo
+          </Button>
+        </Box>
+      ) : obra ? (
+      <>
       <Button
         onClick={() => navigate('/museo-de-arte-contemporaneo')}
         sx={{
@@ -61,7 +96,7 @@ const DetalleObraView = () => {
         <Grid item xs={12} lg={7}>
           <Box className="flex gap-2 mb-4">
             <Chip 
-              label={genero?.nombre} 
+              label={obra.genero?.nombre} 
               sx={{
                 borderRadius: 0,
                 fontSize: '0.7rem',
@@ -96,7 +131,7 @@ const DetalleObraView = () => {
 
           <Box 
             className="mb-6 cursor-pointer"
-            onClick={() => navigate(`/museo-de-arte-contemporaneo/artista/${artista.id}`)}
+            onClick={() => navigate(`/museo-de-arte-contemporaneo/artista/${artista?.id}`)}
           >
             <Typography 
               className="text-gray-600 font-light mb-1 uppercase hover:text-black transition-colors"
@@ -208,6 +243,8 @@ const DetalleObraView = () => {
           </Box>
         </Grid>
       </Grid>
+      </>
+      ) : null}
     </Container>
   );
 };

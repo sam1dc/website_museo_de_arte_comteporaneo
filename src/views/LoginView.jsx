@@ -1,40 +1,52 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Alert, ToggleButtonGroup, ToggleButton, Link as MuiLink } from '@mui/material';
+import { Box, Container, Typography, Alert, ToggleButtonGroup, ToggleButton, Link as MuiLink, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import RegistroForm from '../components/RegistroForm';
 import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services';
 
 const LoginView = () => {
   const [error, setError] = useState('');
   const [mode, setMode] = useState('login'); // 'login' o 'registro'
+  const [cargando, setCargando] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (credentials) => {
-    // Simular consulta a BD - por ahora acepta admin@museo.com como admin
-    if (credentials.email === 'admin@museo.com') {
-      const success = login(credentials.email, credentials.password);
-      if (success) {
-        navigate('/');
-      } else {
-        setError('Credenciales incorrectas');
-      }
-    } else {
-      // Es comprador
-      if (credentials.email && credentials.password) {
-        localStorage.setItem('compradorAuth', JSON.stringify({ email: credentials.email }));
-        navigate('/museo-de-arte-contemporaneo');
-      } else {
-        setError('Por favor completa todos los campos');
-      }
+  const handleLogin = async (credentials) => {
+    try {
+      setCargando(true);
+      setError('');
+      
+      const response = await authService.login(credentials.email, credentials.password);
+      
+      // Guardar token y datos del usuario
+      localStorage.setItem('compradorAuth', JSON.stringify(response));
+      navigate('/museo-de-arte-contemporaneo');
+    } catch (err) {
+      setError(err.message || 'Error al iniciar sesión');
+      console.error(err);
+    } finally {
+      setCargando(false);
     }
   };
 
-  const handleRegistro = (data) => {
-    // Simulación de registro exitoso
-    localStorage.setItem('compradorAuth', JSON.stringify({ email: data.email }));
-    navigate('/museo-de-arte-contemporaneo');
+  const handleRegistro = async (data) => {
+    try {
+      setCargando(true);
+      setError('');
+      
+      const response = await authService.registro(data);
+      
+      // Guardar datos del nuevo usuario
+      localStorage.setItem('compradorAuth', JSON.stringify(response));
+      navigate('/museo-de-arte-contemporaneo');
+    } catch (err) {
+      setError(err.message || 'Error al registrarse');
+      console.error(err);
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -106,7 +118,13 @@ const LoginView = () => {
                 </Alert>
               )}
 
-              <LoginForm onSubmit={handleLogin} />
+              <LoginForm onSubmit={handleLogin} disabled={cargando} />
+
+              {cargando && (
+                <Box className="flex justify-center my-4">
+                  <CircularProgress size={24} />
+                </Box>
+              )}
 
               <Box className="mt-6 text-center">
                 <MuiLink
@@ -127,7 +145,19 @@ const LoginView = () => {
 
           {mode === 'registro' && (
             <>
-              <RegistroForm onSubmit={handleRegistro} />
+              {error && (
+                <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+                  {error}
+                </Alert>
+              )}
+
+              <RegistroForm onSubmit={handleRegistro} disabled={cargando} />
+              
+              {cargando && (
+                <Box className="flex justify-center my-4">
+                  <CircularProgress size={24} />
+                </Box>
+              )}
               
               <Box className="mt-6 text-center">
                 <MuiLink

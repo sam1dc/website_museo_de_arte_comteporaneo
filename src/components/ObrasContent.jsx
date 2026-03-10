@@ -1,55 +1,49 @@
-import { useState } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, MenuItem } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, MenuItem, CircularProgress, Alert } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon } from '@mui/icons-material';
+import { obrasAdminService } from '../services';
 
 const ObrasContent = () => {
-  const [obras, setObras] = useState([
-    { 
-      id: 1, 
-      nombre: 'Guernica',
-      artista: 'Pablo Picasso',
-      genero: 'Pintura',
-      precio: 25000,
-      fechaCreacion: '1937-06-04',
-      estatus: 'Disponible',
-      caracteristicas: 'Óleo sobre lienzo, 349 x 776 cm'
-    },
-    { 
-      id: 2, 
-      nombre: 'Las Dos Fridas',
-      artista: 'Frida Kahlo',
-      genero: 'Pintura',
-      precio: 18000,
-      fechaCreacion: '1939-01-01',
-      estatus: 'Disponible',
-      caracteristicas: 'Óleo sobre lienzo, 173 x 173 cm'
-    },
-    { 
-      id: 3, 
-      nombre: 'El Pensador',
-      artista: 'Auguste Rodin',
-      genero: 'Escultura',
-      precio: 35000,
-      fechaCreacion: '1902-01-01',
-      estatus: 'Reservada',
-      caracteristicas: 'Bronce, 180 cm altura, 98 kg'
-    }
-  ]);
-
+  const [obras, setObras] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const cargadoRef = useRef(false);
   const [currentObra, setCurrentObra] = useState({
-    nombre: '',
-    artista: '',
-    genero: '',
+    titulo: '',
+    artista_id: '',
+    genero_id: '',
     precio: '',
-    fechaCreacion: '',
-    estatus: 'Disponible',
-    caracteristicas: ''
+    año: '',
+    estatus: 'disponible',
+    descripcion: '',
+    tecnica: '',
+    dimensiones: ''
   });
 
-  const generos = ['Pintura', 'Escultura', 'Fotografía', 'Cerámica', 'Orfebrería'];
-  const estatusOptions = ['Disponible', 'Reservada', 'Vendida'];
+  const estatusOptions = ['disponible', 'reservada', 'vendida'];
+
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarObras = async () => {
+      try {
+        setCargando(true);
+        const obrasData = await obrasAdminService.obtenerTodos();
+        setObras(obrasData);
+      } catch (err) {
+        setError('Error al cargar las obras');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarObras();
+  }, []);
 
   const handleOpen = (obra = null) => {
     if (obra) {
@@ -57,13 +51,15 @@ const ObrasContent = () => {
       setEditMode(true);
     } else {
       setCurrentObra({
-        nombre: '',
-        artista: '',
-        genero: '',
+        titulo: '',
+        artista_id: '',
+        genero_id: '',
         precio: '',
-        fechaCreacion: '',
-        estatus: 'Disponible',
-        caracteristicas: ''
+        año: '',
+        estatus: 'disponible',
+        descripcion: '',
+        tecnica: '',
+        dimensiones: ''
       });
       setEditMode(false);
     }
@@ -74,17 +70,37 @@ const ObrasContent = () => {
     setOpen(false);
   };
 
-  const handleSave = () => {
-    if (editMode) {
-      setObras(obras.map(o => o.id === currentObra.id ? currentObra : o));
-    } else {
-      setObras([...obras, { ...currentObra, id: Date.now() }]);
+  const handleSave = async () => {
+    try {
+      setEnviando(true);
+      setError(null);
+
+      if (editMode) {
+        await obrasAdminService.actualizar(currentObra.id, currentObra);
+        setObras(obras.map(o => o.id === currentObra.id ? currentObra : o));
+      } else {
+        const nuevaObra = await obrasAdminService.crear(currentObra);
+        setObras([...obras, nuevaObra]);
+      }
+      handleClose();
+    } catch (err) {
+      setError(err.message || 'Error al guardar la obra');
+      console.error(err);
+    } finally {
+      setEnviando(false);
     }
-    handleClose();
   };
 
-  const handleDelete = (id) => {
-    setObras(obras.filter(o => o.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta obra?')) {
+      try {
+        await obrasAdminService.eliminar(id);
+        setObras(obras.filter(o => o.id !== id));
+      } catch (err) {
+        setError('Error al eliminar la obra');
+        console.error(err);
+      }
+    }
   };
 
   const handleChange = (field, value) => {
@@ -93,15 +109,21 @@ const ObrasContent = () => {
 
   const getEstatusColor = (estatus) => {
     switch (estatus) {
-      case 'Disponible': return 'success';
-      case 'Reservada': return 'warning';
-      case 'Vendida': return 'error';
+      case 'disponible': return 'success';
+      case 'reservada': return 'warning';
+      case 'vendida': return 'error';
       default: return 'default';
     }
   };
 
   return (
     <Box sx={{ width: '100%' }}>
+      {error && (
+        <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
       <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" sx={{ width: '100%' }}>
         <Box>
           <Typography variant="h4" className="font-light tracking-wide mb-2">
@@ -129,6 +151,12 @@ const ObrasContent = () => {
         </Button>
       </Box>
 
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : (
+      <>
       {/* Vista Desktop */}
       <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
         <Table sx={{ width: '100%' }}>
@@ -148,11 +176,11 @@ const ObrasContent = () => {
                 <TableCell>
                   <Box className="flex items-center gap-2">
                     <ImageIcon className="text-gray-400" />
-                    <Typography className="font-medium">{obra.nombre}</Typography>
+                    <Typography className="font-medium">{obra.titulo}</Typography>
                   </Box>
                 </TableCell>
-                <TableCell>{obra.artista}</TableCell>
-                <TableCell>{obra.genero}</TableCell>
+                <TableCell>{obra.artista?.nombre}</TableCell>
+                <TableCell>{obra.genero?.nombre}</TableCell>
                 <TableCell>${obra.precio.toLocaleString()}</TableCell>
                 <TableCell>
                   <Chip 
@@ -182,8 +210,8 @@ const ObrasContent = () => {
           <Paper key={obra.id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
             <Box className="flex justify-between items-start mb-3">
               <Box>
-                <Typography className="font-medium text-lg">{obra.nombre}</Typography>
-                <Typography variant="body2" className="text-gray-600">{obra.artista}</Typography>
+                <Typography className="font-medium text-lg">{obra.titulo}</Typography>
+                <Typography variant="body2" className="text-gray-600">{obra.artista?.nombre}</Typography>
               </Box>
               <Box>
                 <IconButton size="small" onClick={() => handleOpen(obra)}>
@@ -196,7 +224,7 @@ const ObrasContent = () => {
             </Box>
             <Box className="space-y-2">
               <Typography variant="body2" className="text-gray-600">
-                <span className="font-medium">Género:</span> {obra.genero}
+                <span className="font-medium">Género:</span> {obra.genero?.nombre}
               </Typography>
               <Typography variant="body2" className="text-gray-600">
                 <span className="font-medium">Precio:</span> ${obra.precio.toLocaleString()}
@@ -211,6 +239,8 @@ const ObrasContent = () => {
           </Paper>
         ))}
       </Box>
+      </>
+      )}
 
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -220,33 +250,28 @@ const ObrasContent = () => {
         <DialogContent>
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <TextField
-              label="Nombre de la Obra"
-              value={currentObra.nombre}
-              onChange={(e) => handleChange('nombre', e.target.value)}
+              label="Título"
+              value={currentObra.titulo}
+              onChange={(e) => handleChange('titulo', e.target.value)}
               fullWidth
               variant="standard"
             />
             <TextField
-              label="Artista"
-              value={currentObra.artista}
-              onChange={(e) => handleChange('artista', e.target.value)}
+              label="Artista ID"
+              type="number"
+              value={currentObra.artista_id}
+              onChange={(e) => handleChange('artista_id', e.target.value)}
               fullWidth
               variant="standard"
             />
             <TextField
-              select
-              label="Género"
-              value={currentObra.genero}
-              onChange={(e) => handleChange('genero', e.target.value)}
+              label="Género ID"
+              type="number"
+              value={currentObra.genero_id}
+              onChange={(e) => handleChange('genero_id', e.target.value)}
               fullWidth
               variant="standard"
-            >
-              {generos.map((genero) => (
-                <MenuItem key={genero} value={genero}>
-                  {genero}
-                </MenuItem>
-              ))}
-            </TextField>
+            />
             <TextField
               label="Precio (USD)"
               type="number"
@@ -256,13 +281,12 @@ const ObrasContent = () => {
               variant="standard"
             />
             <TextField
-              label="Fecha de Creación"
-              type="date"
-              value={currentObra.fechaCreacion}
-              onChange={(e) => handleChange('fechaCreacion', e.target.value)}
+              label="Año"
+              type="number"
+              value={currentObra.año}
+              onChange={(e) => handleChange('año', e.target.value)}
               fullWidth
               variant="standard"
-              InputLabelProps={{ shrink: true }}
             />
             <TextField
               select
@@ -279,15 +303,28 @@ const ObrasContent = () => {
               ))}
             </TextField>
             <TextField
-              label="Características"
-              value={currentObra.caracteristicas}
-              onChange={(e) => handleChange('caracteristicas', e.target.value)}
+              label="Técnica"
+              value={currentObra.tecnica}
+              onChange={(e) => handleChange('tecnica', e.target.value)}
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              label="Dimensiones"
+              value={currentObra.dimensiones}
+              onChange={(e) => handleChange('dimensiones', e.target.value)}
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              label="Descripción"
+              value={currentObra.descripcion}
+              onChange={(e) => handleChange('descripcion', e.target.value)}
               fullWidth
               multiline
               rows={3}
               variant="standard"
               className="md:col-span-2"
-              helperText="Ej: Material, dimensiones, peso, etc."
             />
           </Box>
         </DialogContent>
@@ -297,6 +334,7 @@ const ObrasContent = () => {
           </Button>
           <Button
             onClick={handleSave}
+            disabled={enviando}
             variant="contained"
             sx={{
               backgroundColor: '#000',
@@ -305,7 +343,7 @@ const ObrasContent = () => {
               '&:hover': { backgroundColor: '#1a1a1a' }
             }}
           >
-            Guardar
+            {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
           </Button>
         </DialogActions>
       </Dialog>

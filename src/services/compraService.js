@@ -6,4 +6,9 @@ export const compraService = {
     method: 'POST',
     body: JSON.stringify(datos),
   }),
+
+  obtenerMisCompras: async () => {
+    const response = await apiCall('/mis-compras');
+    return response.data || response;
+  },
 };

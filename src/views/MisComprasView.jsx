@@ -1,27 +1,40 @@
-import { Container, Typography, Box, Paper, Grid } from '@mui/material';
+import { Container, Typography, Box, Paper, Grid, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { compraService } from '../services';
 
 const MisComprasView = () => {
   const navigate = useNavigate();
+  const [compras, setCompras] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const cargadoRef = useRef(false);
   const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
 
-  if (!comprador) {
-    navigate('/login');
-    return null;
-  }
-
-  // Simulación de compras - en producción vendría de la BD
-  const compras = [
-    {
-      id: 1,
-      numeroOrden: 'MAC-12345678',
-      fecha: '2024-02-15',
-      obra: 'Sinfonía en Rojo',
-      artista: 'Ana Martínez',
-      total: 17400,
-      estatus: 'Entregado'
+  useEffect(() => {
+    if (!comprador) {
+      navigate('/login');
+      return;
     }
-  ];
+
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarCompras = async () => {
+      try {
+        setCargando(true);
+        const comprasData = await compraService.obtenerMisCompras();
+        setCompras(comprasData);
+      } catch (err) {
+        setError('Error al cargar tus compras');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarCompras();
+  }, [comprador, navigate]);
 
   return (
     <Container maxWidth="xl" className="py-16">
@@ -43,6 +56,16 @@ const MisComprasView = () => {
         <Box className="text-center py-16">
           <Typography className="text-gray-500 font-light tracking-wide mb-6">
             Aún no has realizado ninguna compra
+          </Typography>
+        </Box>
+      ) : cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Box className="text-center py-16">
+          <Typography className="text-red-500 font-light tracking-wide">
+            {error}
           </Typography>
         </Box>
       ) : (
@@ -71,7 +94,7 @@ const MisComprasView = () => {
                       className="font-light tracking-wider"
                       sx={{ fontSize: '0.9rem', letterSpacing: '0.05em' }}
                     >
-                      {compra.numeroOrden}
+                      {compra.numero_orden}
                     </Typography>
                   </Grid>
 
@@ -83,7 +106,7 @@ const MisComprasView = () => {
                       Fecha
                     </Typography>
                     <Typography className="font-light">
-                      {new Date(compra.fecha).toLocaleDateString('es-ES')}
+                      {new Date(compra.fecha_compra).toLocaleDateString('es-ES')}
                     </Typography>
                   </Grid>
 
@@ -95,13 +118,13 @@ const MisComprasView = () => {
                       Obra
                     </Typography>
                     <Typography className="font-light">
-                      {compra.obra}
+                      {compra.obra?.titulo}
                     </Typography>
                     <Typography 
                       className="text-gray-600 font-light"
                       sx={{ fontSize: '0.75rem' }}
                     >
-                      {compra.artista}
+                      {compra.obra?.artista?.nombre}
                     </Typography>
                   </Grid>
 
@@ -113,7 +136,7 @@ const MisComprasView = () => {
                       Total
                     </Typography>
                     <Typography className="font-light" sx={{ fontSize: '1.1rem' }}>
-                      ${compra.total.toLocaleString()}
+                      ${compra.precio_total.toLocaleString()}
                     </Typography>
                     <Typography 
                       className="text-green-700 font-light mt-1"

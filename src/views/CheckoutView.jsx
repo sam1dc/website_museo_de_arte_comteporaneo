@@ -1,20 +1,120 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, Grid, Button, TextField, Paper } from '@mui/material';
-import { useState } from 'react';
-import { MOCK_OBRAS, MOCK_ARTISTAS } from '../utils/mockData';
+import { Container, Typography, Box, Grid, Button, TextField, Paper, CircularProgress, Alert } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { catalogoService, compraService } from '../services';
 
 const CheckoutView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const obra = MOCK_OBRAS.find(o => o.id === parseInt(id));
-  const artista = obra ? MOCK_ARTISTAS.find(a => a.id === obra.artistaId) : null;
+  const [obra, setObra] = useState(null);
+  const [artista, setArtista] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [formaPago, setFormaPago] = useState('tarjeta');
+  const [formData, setFormData] = useState({
+    direccion: '',
+    ciudad: '',
+    codigoPostal: '',
+    pais: '',
+    numeroTarjeta: '',
+    fechaExpiracion: '',
+    cvv: '',
+    nombreTarjeta: ''
+  });
+  const cargadoRef = useRef(false);
   const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
 
-  const [formaPago, setFormaPago] = useState('tarjeta');
+  useEffect(() => {
+    if (!comprador) {
+      navigate('/login');
+      return;
+    }
 
-  if (!comprador) {
-    navigate('/login');
-    return null;
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarDatos = async () => {
+      try {
+        setCargando(true);
+        const obraData = await catalogoService.obtenerObraDetalle(id);
+        setObra(obraData);
+        
+        if (obraData.estatus !== 'disponible') {
+          setError('Obra no disponible');
+        }
+      } catch (err) {
+        setError('Obra no encontrada');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, [id, comprador, navigate]);
+
+  const handleConfirmar = async () => {
+    try {
+      setEnviando(true);
+      setError(null);
+
+      const solicitud = {
+        obra_id: obra.id,
+        comprador_id: comprador.id,
+        cantidad: 1,
+        precio_total: iva + obra.precio,
+        direccion_envio: formData.direccion,
+        ciudad: formData.ciudad,
+        codigo_postal: formData.codigoPostal,
+        pais: formData.pais,
+        forma_pago: formaPago
+      };
+
+      const response = await compraService.crearSolicitud(solicitud);
+      
+      navigate('/museo-de-arte-contemporaneo/confirmacion', {
+        state: { obra, total: iva + obra.precio, solicitud: response }
+      });
+    } catch (err) {
+      setError(err.message || 'Error al procesar la compra');
+      console.error(err);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  if (cargando) {
+    return (
+      <Container maxWidth="xl" className="py-16">
+        <Box className="flex justify-center">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error && !obra) {
+    return (
+      <Container maxWidth="xl" className="py-16">
+        <Box className="text-center">
+          <Typography className="text-red-500 font-light tracking-wide mb-4">
+            {error}
+          </Typography>
+          <Button onClick={() => navigate('/museo-de-arte-contemporaneo')}>
+            Volver al catálogo
+          </Button>
+        </Box>
+      </Container>
+    );
   }
 
   if (!obra || obra.estatus !== 'disponible') {
@@ -28,13 +128,6 @@ const CheckoutView = () => {
   const iva = obra.precio * 0.16;
   const total = obra.precio + iva;
 
-  const handleConfirmar = () => {
-    // Simular compra exitosa
-    navigate('/museo-de-arte-contemporaneo/confirmacion', {
-      state: { obra, total }
-    });
-  };
-
   const inputStyles = {
     '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
     '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
@@ -45,6 +138,12 @@ const CheckoutView = () => {
 
   return (
     <Container maxWidth="lg" className="py-16">
+      {error && (
+        <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
       <Button
         onClick={() => navigate(-1)}
         sx={{
@@ -102,6 +201,9 @@ const CheckoutView = () => {
                     variant="standard"
                     fullWidth
                     placeholder="1234 5678 9012 3456"
+                    name="numeroTarjeta"
+                    value={formData.numeroTarjeta}
+                    onChange={handleInputChange}
                     sx={inputStyles}
                   />
                   <Box className="grid grid-cols-2 gap-4">
@@ -109,12 +211,18 @@ const CheckoutView = () => {
                       label="Fecha de Expiración"
                       variant="standard"
                       placeholder="MM/AA"
+                      name="fechaExpiracion"
+                      value={formData.fechaExpiracion}
+                      onChange={handleInputChange}
                       sx={inputStyles}
                     />
                     <TextField
                       label="CVV"
                       variant="standard"
                       placeholder="123"
+                      name="cvv"
+                      value={formData.cvv}
+                      onChange={handleInputChange}
                       sx={inputStyles}
                     />
                   </Box>
@@ -122,6 +230,9 @@ const CheckoutView = () => {
                     label="Nombre en la Tarjeta"
                     variant="standard"
                     fullWidth
+                    name="nombreTarjeta"
+                    value={formData.nombreTarjeta}
+                    onChange={handleInputChange}
                     sx={inputStyles}
                   />
                 </>
@@ -143,17 +254,26 @@ const CheckoutView = () => {
                 label="Dirección"
                 variant="standard"
                 fullWidth
+                name="direccion"
+                value={formData.direccion}
+                onChange={handleInputChange}
                 sx={inputStyles}
               />
               <Box className="grid grid-cols-2 gap-4">
                 <TextField
                   label="Ciudad"
                   variant="standard"
+                  name="ciudad"
+                  value={formData.ciudad}
+                  onChange={handleInputChange}
                   sx={inputStyles}
                 />
                 <TextField
                   label="Código Postal"
                   variant="standard"
+                  name="codigoPostal"
+                  value={formData.codigoPostal}
+                  onChange={handleInputChange}
                   sx={inputStyles}
                 />
               </Box>
@@ -161,6 +281,9 @@ const CheckoutView = () => {
                 label="País"
                 variant="standard"
                 fullWidth
+                name="pais"
+                value={formData.pais}
+                onChange={handleInputChange}
                 sx={inputStyles}
               />
             </Box>
@@ -239,6 +362,7 @@ const CheckoutView = () => {
 
             <Button
               onClick={handleConfirmar}
+              disabled={enviando}
               fullWidth
               variant="contained"
               sx={{
@@ -253,7 +377,7 @@ const CheckoutView = () => {
                 textTransform: 'uppercase'
               }}
             >
-              Confirmar Compra
+              {enviando ? <CircularProgress size={20} color="inherit" /> : 'Confirmar Compra'}
             </Button>
           </Paper>
         </Grid>

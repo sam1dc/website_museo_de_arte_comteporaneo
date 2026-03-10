@@ -1,27 +1,53 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Chip, Button } from '@mui/material';
-import { MOCK_ARTISTAS, MOCK_OBRAS, MOCK_GENEROS } from '../utils/mockData';
+import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Chip, Button, CircularProgress } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { artistaService } from '../services';
 
 const ArtistaPerfilView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const artista = MOCK_ARTISTAS.find(a => a.id === parseInt(id));
-  const obrasArtista = MOCK_OBRAS.filter(o => o.artistaId === parseInt(id));
-  
-  if (!artista) {
-    return (
-      <Container maxWidth="xl" className="py-16">
-        <Typography>Artista no encontrado</Typography>
-      </Container>
-    );
-  }
+  const [artista, setArtista] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const cargadoRef = useRef(false);
 
-  const generosArtista = artista.generos.map(gId => 
-    MOCK_GENEROS.find(g => g.id === gId)
-  ).filter(Boolean);
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarDatos = async () => {
+      try {
+        setCargando(true);
+        const artistaData = await artistaService.obtenerDetalle(id);
+        setArtista(artistaData);
+      } catch (err) {
+        setError('Artista no encontrado');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, [id]);
 
   return (
     <Container maxWidth="xl" className="py-16">
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Box className="text-center py-16">
+          <Typography className="text-red-500 font-light tracking-wide mb-4">
+            {error}
+          </Typography>
+          <Button onClick={() => navigate(-1)}>
+            Volver
+          </Button>
+        </Box>
+      ) : artista ? (
+      <>
       <Button
         onClick={() => navigate(-1)}
         sx={{
@@ -48,7 +74,7 @@ const ArtistaPerfilView = () => {
         <Box className="w-24 h-px bg-black mb-6" />
         
         <Box className="flex gap-2 mb-6">
-          {generosArtista.map(genero => (
+          {artista.generos?.map(genero => (
             <Chip 
               key={genero.id}
               label={genero.nombre} 
@@ -92,7 +118,7 @@ const ArtistaPerfilView = () => {
                   Nacimiento
                 </Typography>
                 <Typography className="font-light">
-                  {new Date(artista.fechaNacimiento).getFullYear()}
+                  {new Date(artista.fecha_nacimiento).getFullYear()}
                 </Typography>
               </Box>
             </Box>
@@ -112,85 +138,83 @@ const ArtistaPerfilView = () => {
       </Box>
 
       <Grid container spacing={4}>
-        {obrasArtista.map(obra => {
-          const genero = MOCK_GENEROS.find(g => g.id === obra.generoId);
-          
-          return (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={obra.id}>
-              <Card 
-                className="cursor-pointer transition-all hover:shadow-lg"
-                onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.id}`)}
-                sx={{ 
-                  borderRadius: 0,
-                  boxShadow: 'none',
-                  border: '1px solid #e5e5e5',
-                  '&:hover': { borderColor: '#000' }
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="300"
-                  image={obra.imagen}
-                  alt={obra.titulo}
-                  sx={{ aspectRatio: '3/4', objectFit: 'cover' }}
-                />
-                <CardContent className="p-6">
-                  <Typography 
-                    variant="h6" 
-                    className="font-light tracking-wide mb-2 uppercase"
-                    sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
-                  >
-                    {obra.titulo}
-                  </Typography>
+        {artista.obras?.map(obra => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.id}>
+            <Card 
+              className="cursor-pointer transition-all hover:shadow-lg"
+              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.id}`)}
+              sx={{ 
+                borderRadius: 0,
+                boxShadow: 'none',
+                border: '1px solid #e5e5e5',
+                '&:hover': { borderColor: '#000' }
+              }}
+            >
+              <CardMedia
+                component="img"
+                height="300"
+                image={obra.imagen}
+                alt={obra.titulo}
+                sx={{ aspectRatio: '3/4', objectFit: 'cover' }}
+              />
+              <CardContent className="p-6">
+                <Typography 
+                  variant="h6" 
+                  className="font-light tracking-wide mb-2 uppercase"
+                  sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
+                >
+                  {obra.titulo}
+                </Typography>
 
-                  <Box className="flex items-center justify-between mb-3">
-                    <Chip 
-                      label={genero?.nombre} 
-                      size="small"
-                      sx={{
-                        borderRadius: 0,
-                        fontSize: '0.65rem',
-                        letterSpacing: '0.05em',
-                        fontWeight: 300,
-                        backgroundColor: '#f5f5f5',
-                        color: '#666'
-                      }}
-                    />
-                    <Chip 
-                      label={obra.estatus === 'disponible' ? 'Disponible' : 'Vendida'} 
-                      size="small"
-                      sx={{
-                        borderRadius: 0,
-                        fontSize: '0.65rem',
-                        letterSpacing: '0.05em',
-                        fontWeight: 300,
-                        backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
-                        color: '#fff'
-                      }}
-                    />
-                  </Box>
+                <Box className="flex items-center justify-between mb-3">
+                  <Chip 
+                    label={obra.genero?.nombre} 
+                    size="small"
+                    sx={{
+                      borderRadius: 0,
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.05em',
+                      fontWeight: 300,
+                      backgroundColor: '#f5f5f5',
+                      color: '#666'
+                    }}
+                  />
+                  <Chip 
+                    label={obra.estatus === 'disponible' ? 'Disponible' : 'Vendida'} 
+                    size="small"
+                    sx={{
+                      borderRadius: 0,
+                      fontSize: '0.65rem',
+                      letterSpacing: '0.05em',
+                      fontWeight: 300,
+                      backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
+                      color: '#fff'
+                    }}
+                  />
+                </Box>
 
-                  <Typography 
-                    variant="h6" 
-                    className="font-light"
-                    sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
-                  >
-                    ${obra.precio.toLocaleString()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
+                <Typography 
+                  variant="h6" 
+                  className="font-light"
+                  sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
+                >
+                  ${obra.precio.toLocaleString()}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
-      {obrasArtista.length === 0 && (
+      {!artista.obras || artista.obras.length === 0 && (
         <Box className="text-center py-16">
           <Typography className="text-gray-500 font-light tracking-wide">
             No hay obras disponibles de este artista
           </Typography>
         </Box>
       )}
+      </>
+      ) : null}
     </Container>
   );
 };
