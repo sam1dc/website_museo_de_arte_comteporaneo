@@ -39,7 +39,7 @@ const CatalogoView = () => {
 
   const obrasFiltradas = obras.filter(obra => {
     const cumpleGenero = filtroGenero === 'todos' || obra.genero_id === parseInt(filtroGenero);
-    const cumpleEstatus = filtroEstatus === 'todos' || obra.estatus === filtroEstatus;
+    const cumpleEstatus = filtroEstatus === 'todos' || obra.estatus?.toUpperCase() === filtroEstatus.toUpperCase();
     return cumpleGenero && cumpleEstatus;
   });
 
@@ -78,7 +78,7 @@ const CatalogoView = () => {
         >
           <MenuItem value="todos">Todos</MenuItem>
           {generos.map(genero => (
-            <MenuItem key={genero.id} value={genero.id}>{genero.nombre}</MenuItem>
+            <MenuItem key={genero.genero_id} value={genero.genero_id}>{genero.nombre}</MenuItem>
           ))}
         </TextField>
 
@@ -98,8 +98,8 @@ const CatalogoView = () => {
           }}
         >
           <MenuItem value="todos">Todas</MenuItem>
-          <MenuItem value="disponible">Disponibles</MenuItem>
-          <MenuItem value="vendida">Vendidas</MenuItem>
+          <MenuItem value="DISPONIBLE">Disponibles</MenuItem>
+          <MenuItem value="VENDIDA">Vendidas</MenuItem>
         </TextField>
       </Box>
 
@@ -117,10 +117,10 @@ const CatalogoView = () => {
       ) : (
       <Grid container spacing={4}>
         {obrasFiltradas.map(obra => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.obra_id}>
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg flex flex-col"
-              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.id}`)}
+              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
               sx={{ 
                 borderRadius: 0,
                 boxShadow: 'none',
@@ -132,8 +132,8 @@ const CatalogoView = () => {
             >
               <CardMedia
                 component="img"
-                image={obra.imagen}
-                alt={obra.titulo}
+                image={obra.foto_url}
+                alt={obra.nombre}
                 sx={{ 
                   width: '100%',
                   minWidth: '100%',
@@ -156,7 +156,7 @@ const CatalogoView = () => {
                     overflow: 'hidden'
                   }}
                 >
-                  {obra.titulo}
+                  {obra.nombre}
                 </Typography>
                 
                 <Typography 
@@ -168,7 +168,7 @@ const CatalogoView = () => {
                     minHeight: '1.5rem'
                   }}
                 >
-                  {obra.artista?.nombre}
+                  {obra.artista?.nombre_completo}
                 </Typography>
 
                 <Box className="flex items-center justify-between mb-3">

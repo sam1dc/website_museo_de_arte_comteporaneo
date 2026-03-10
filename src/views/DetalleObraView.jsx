@@ -42,7 +42,7 @@ const DetalleObraView = () => {
     if (!comprador) {
       navigate('/login');
     } else {
-      navigate(`/museo-de-arte-contemporaneo/checkout/${obra.id}`);
+      navigate(`/museo-de-arte-contemporaneo/checkout/${obra.obra_id}`);
     }
   };
 
@@ -82,8 +82,8 @@ const DetalleObraView = () => {
         <Grid item xs={12} lg={5}>
           <Box
             component="img"
-            src={obra.imagen}
-            alt={obra.titulo}
+            src={obra.foto_url}
+            alt={obra.nombre}
             sx={{
               width: '100%',
               height: '600px',
@@ -107,13 +107,13 @@ const DetalleObraView = () => {
               }}
             />
             <Chip 
-              label={obra.estatus === 'disponible' ? 'Disponible' : 'Vendida'} 
+              label={obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'} 
               sx={{
                 borderRadius: 0,
                 fontSize: '0.7rem',
                 letterSpacing: '0.05em',
                 fontWeight: 300,
-                backgroundColor: obra.estatus === 'disponible' ? '#000' : '#999',
+                backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999',
                 color: '#fff'
               }}
             />
@@ -124,14 +124,14 @@ const DetalleObraView = () => {
             className="font-extralight tracking-widest text-black mb-4 uppercase"
             sx={{ letterSpacing: '0.15em', fontSize: '2rem' }}
           >
-            {obra.titulo}
+            {obra.nombre}
           </Typography>
 
           <Box className="w-24 h-px bg-black mb-6" />
 
           <Box 
             className="mb-6 cursor-pointer"
-            onClick={() => navigate(`/museo-de-arte-contemporaneo/artista/${artista?.id}`)}
+            onClick={() => navigate(`/museo-de-arte-contemporaneo/artista/${artista?.artista_id}`)}
           >
             <Typography 
               className="text-gray-600 font-light mb-1 uppercase hover:text-black transition-colors"
@@ -143,7 +143,7 @@ const DetalleObraView = () => {
               className="font-light tracking-wide hover:underline"
               sx={{ fontSize: '1.1rem', letterSpacing: '0.05em' }}
             >
-              {artista?.nombre}
+              {artista?.nombre_completo}
             </Typography>
           </Box>
 
@@ -162,33 +162,26 @@ const DetalleObraView = () => {
             </Typography>
           </Box>
 
-          <Box className="mb-6 grid grid-cols-3 gap-4">
+          <Box className="mb-6 grid grid-cols-2 gap-4">
             <Box>
               <Typography 
                 className="text-gray-600 font-light mb-1 uppercase"
                 sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
               >
-                Año
+                Fecha Creación
               </Typography>
-              <Typography className="font-light">{obra.año}</Typography>
+              <Typography className="font-light">
+                {obra.fecha_creacion ? new Date(obra.fecha_creacion).getFullYear() : 'N/A'}
+              </Typography>
             </Box>
             <Box>
               <Typography 
                 className="text-gray-600 font-light mb-1 uppercase"
                 sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
               >
-                Técnica
+                Género
               </Typography>
-              <Typography className="font-light">{obra.tecnica}</Typography>
-            </Box>
-            <Box>
-              <Typography 
-                className="text-gray-600 font-light mb-1 uppercase"
-                sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
-              >
-                Dimensiones
-              </Typography>
-              <Typography className="font-light">{obra.dimensiones}</Typography>
+              <Typography className="font-light">{obra.genero?.nombre || 'N/A'}</Typography>
             </Box>
           </Box>
 
@@ -198,10 +191,10 @@ const DetalleObraView = () => {
               className="font-light mb-6"
               sx={{ fontSize: '2rem', letterSpacing: '0.05em' }}
             >
-              ${obra.precio.toLocaleString()}
+              ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
             </Typography>
 
-            {obra.estatus === 'disponible' ? (
+            {obra.estatus === 'DISPONIBLE' ? (
               <Button
                 onClick={handleComprar}
                 fullWidth

@@ -44,6 +44,12 @@ const PublicLayout = () => {
 
               {comprador ? (
                 <>
+                  <Typography 
+                    className="text-gray-600 text-sm tracking-wider hidden sm:block"
+                    sx={{ letterSpacing: '0.05em', fontWeight: 300 }}
+                  >
+                    {comprador.data?.nombre_completo || comprador.data?.nombres || 'Usuario'}
+                  </Typography>
                   <Link to="/museo-de-arte-contemporaneo/mis-compras" className="no-underline">
                     <Typography 
                       className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"

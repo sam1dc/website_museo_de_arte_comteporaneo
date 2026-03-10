@@ -12,12 +12,13 @@ const UsuariosContent = () => {
   const [enviando, setEnviando] = useState(false);
   const cargadoRef = useRef(false);
   const [currentUsuario, setCurrentUsuario] = useState({
-    nombre: '',
-    apellido: '',
+    nombres: '',
+    apellidos: '',
     email: '',
     telefono: '',
-    rol: '',
-    estado: 'activo',
+    username: '',
+    rol: 'Empleado',
+    activo: true,
     password: ''
   });
 
@@ -47,12 +48,13 @@ const UsuariosContent = () => {
       setEditMode(true);
     } else {
       setCurrentUsuario({
-        nombre: '',
-        apellido: '',
+        nombres: '',
+        apellidos: '',
         email: '',
         telefono: '',
-        rol: '',
-        estado: 'activo',
+        username: '',
+        rol: 'Empleado',
+        activo: true,
         password: ''
       });
       setEditMode(false);
@@ -69,11 +71,27 @@ const UsuariosContent = () => {
       setEnviando(true);
       setError(null);
 
+      // Preparar datos para enviar
+      const datos = {
+        nombres: currentUsuario.nombres,
+        apellidos: currentUsuario.apellidos,
+        email: currentUsuario.email,
+        telefono: currentUsuario.telefono,
+        username: currentUsuario.username,
+        es_admin: currentUsuario.rol === 'Administrador',
+        activo: currentUsuario.activo,
+      };
+
+      if (currentUsuario.password) {
+        datos.password = currentUsuario.password;
+      }
+
       if (editMode) {
-        await usuariosAdminService.actualizar(currentUsuario.id, currentUsuario);
-        setUsuarios(usuarios.map(u => u.id === currentUsuario.id ? currentUsuario : u));
+        await usuariosAdminService.actualizar(currentUsuario.empleado_id, datos);
+        const usuariosData = await usuariosAdminService.obtenerTodos();
+        setUsuarios(usuariosData);
       } else {
-        const nuevoUsuario = await usuariosAdminService.crear(currentUsuario);
+        const nuevoUsuario = await usuariosAdminService.crear(datos);
         setUsuarios([...usuarios, nuevoUsuario]);
       }
       handleClose();
@@ -242,16 +260,23 @@ const UsuariosContent = () => {
         <DialogContent>
           <Box className="flex flex-col gap-6 mt-4">
             <TextField
-              label="Nombre"
-              value={currentUsuario.nombre}
-              onChange={(e) => handleChange('nombre', e.target.value)}
+              label="Nombres"
+              value={currentUsuario.nombres}
+              onChange={(e) => handleChange('nombres', e.target.value)}
               fullWidth
               variant="standard"
             />
             <TextField
-              label="Apellido"
-              value={currentUsuario.apellido}
-              onChange={(e) => handleChange('apellido', e.target.value)}
+              label="Apellidos"
+              value={currentUsuario.apellidos}
+              onChange={(e) => handleChange('apellidos', e.target.value)}
+              fullWidth
+              variant="standard"
+            />
+            <TextField
+              label="Username"
+              value={currentUsuario.username}
+              onChange={(e) => handleChange('username', e.target.value)}
               fullWidth
               variant="standard"
             />
@@ -284,12 +309,12 @@ const UsuariosContent = () => {
             <FormControl fullWidth variant="standard">
               <InputLabel>Estado</InputLabel>
               <Select
-                value={currentUsuario.estado}
-                onChange={(e) => handleChange('estado', e.target.value)}
+                value={currentUsuario.activo}
+                onChange={(e) => handleChange('activo', e.target.value)}
                 label="Estado"
               >
-                <MenuItem value="activo">Activo</MenuItem>
-                <MenuItem value="inactivo">Inactivo</MenuItem>
+                <MenuItem value={true}>Activo</MenuItem>
+                <MenuItem value={false}>Inactivo</MenuItem>
               </Select>
             </FormControl>
             <TextField
