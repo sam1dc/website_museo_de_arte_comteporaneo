@@ -22,7 +22,13 @@ const LoginView = () => {
       
       // Guardar token y datos del usuario
       localStorage.setItem('compradorAuth', JSON.stringify(response));
-      navigate('/museo-de-arte-contemporaneo');
+      
+      // Redirigir según el tipo de usuario
+      if (response.tipo === 'admin' || response.tipo === 'empleado') {
+        navigate('/');
+      } else {
+        navigate('/museo-de-arte-contemporaneo');
+      }
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión');
       console.error(err);
