@@ -181,7 +181,7 @@ const ObrasContent = () => {
                 </TableCell>
                 <TableCell>{obra.artista?.nombre}</TableCell>
                 <TableCell>{obra.genero?.nombre}</TableCell>
-                <TableCell>${obra.precio.toLocaleString()}</TableCell>
+                <TableCell>${(obra.precio || 0).toLocaleString()}</TableCell>
                 <TableCell>
                   <Chip 
                     label={obra.estatus} 
@@ -227,7 +227,7 @@ const ObrasContent = () => {
                 <span className="font-medium">Género:</span> {obra.genero?.nombre}
               </Typography>
               <Typography variant="body2" className="text-gray-600">
-                <span className="font-medium">Precio:</span> ${obra.precio.toLocaleString()}
+                <span className="font-medium">Precio:</span> ${(obra.precio || 0).toLocaleString()}
               </Typography>
               <Chip 
                 label={obra.estatus} 

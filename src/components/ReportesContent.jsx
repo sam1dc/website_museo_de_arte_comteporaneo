@@ -69,13 +69,13 @@ const ReportesContent = () => {
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Total Ingresos:</Typography>
                 <Typography className="font-medium">
-                  ${reportes.facturacion.total_ingresos?.toLocaleString() || 0}
+                  ${(reportes.facturacion?.total_ingresos || 0).toLocaleString()}
                 </Typography>
               </Box>
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Facturas Emitidas:</Typography>
                 <Typography className="font-medium">
-                  {reportes.facturacion.total_facturas || 0}
+                  {reportes.facturacion?.total_facturas || 0}
                 </Typography>
               </Box>
             </Box>
@@ -92,13 +92,13 @@ const ReportesContent = () => {
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Total Miembros:</Typography>
                 <Typography className="font-medium">
-                  {reportes.membresias.total_miembros || 0}
+                  {reportes.membresias?.total_miembros || 0}
                 </Typography>
               </Box>
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Activas:</Typography>
                 <Typography className="font-medium">
-                  {reportes.membresias.activas || 0}
+                  {reportes.membresias?.activas || 0}
                 </Typography>
               </Box>
             </Box>
@@ -115,13 +115,15 @@ const ReportesContent = () => {
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Total Vendidas:</Typography>
                 <Typography className="font-medium">
-                  {reportes.obrasVendidas.length || 0}
+                  {Array.isArray(reportes.obrasVendidas) ? reportes.obrasVendidas.length : 0}
                 </Typography>
               </Box>
               <Box className="flex justify-between">
                 <Typography className="text-gray-600">Valor Total:</Typography>
                 <Typography className="font-medium">
-                  ${reportes.obrasVendidas.reduce((sum, obra) => sum + (obra.precio || 0), 0).toLocaleString()}
+                  ${Array.isArray(reportes.obrasVendidas) 
+                    ? reportes.obrasVendidas.reduce((sum, obra) => sum + (obra.precio || 0), 0).toLocaleString()
+                    : 0}
                 </Typography>
               </Box>
             </Box>

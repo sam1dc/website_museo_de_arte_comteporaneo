@@ -62,12 +62,12 @@ const FacturacionContent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {facturas.map((factura) => (
+            {Array.isArray(facturas) && facturas.map((factura) => (
               <TableRow key={factura.id} hover>
                 <TableCell>{factura.numero_factura}</TableCell>
                 <TableCell>{factura.comprador?.nombre}</TableCell>
                 <TableCell>{new Date(factura.fecha).toLocaleDateString()}</TableCell>
-                <TableCell>${factura.monto.toLocaleString()}</TableCell>
+                <TableCell>${(factura.monto || 0).toLocaleString()}</TableCell>
                 <TableCell>{factura.estado}</TableCell>
               </TableRow>
             ))}

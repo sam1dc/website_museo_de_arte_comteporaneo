@@ -61,7 +61,7 @@ const CompradoresContent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {compradores.map((comprador) => (
+            {Array.isArray(compradores) && compradores.map((comprador) => (
               <TableRow key={comprador.id} hover>
                 <TableCell>{comprador.nombre}</TableCell>
                 <TableCell>{comprador.email}</TableCell>
