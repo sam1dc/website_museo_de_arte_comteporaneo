@@ -12,7 +12,6 @@ const RegistroForm = ({ onSubmit }) => {
     direccion: '',
     ciudad: '',
     pais: '',
-    membresia: 'basica',
     password: '',
     confirmPassword: ''
   });
@@ -25,7 +24,19 @@ const RegistroForm = ({ onSubmit }) => {
       return;
     }
 
-    onSubmit(values);
+    // Enviar solo los campos que el servidor espera
+    const datosRegistro = {
+      nombre: values.nombre,
+      apellido: values.apellido,
+      email: values.email,
+      telefono: values.telefono,
+      direccion: values.direccion,
+      ciudad: values.ciudad,
+      pais: values.pais,
+      password: values.password
+    };
+
+    onSubmit(datosRegistro);
   };
 
   const inputStyles = {
@@ -124,22 +135,6 @@ const RegistroForm = ({ onSubmit }) => {
           sx={inputStyles}
         />
       </Box>
-
-      <TextField
-        select
-        label="Membresía"
-        name="membresia"
-        value={values.membresia}
-        onChange={handleChange}
-        required
-        fullWidth
-        variant="standard"
-        sx={inputStyles}
-      >
-        <MenuItem value="basica">Básica</MenuItem>
-        <MenuItem value="premium">Premium</MenuItem>
-        <MenuItem value="vip">VIP</MenuItem>
-      </TextField>
 
       <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TextField

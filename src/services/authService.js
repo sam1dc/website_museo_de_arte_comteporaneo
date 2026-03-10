@@ -10,7 +10,10 @@ export const authService = {
 
   registro: (datos) => apiCall('/registro', {
     method: 'POST',
-    body: JSON.stringify(datos),
+    body: JSON.stringify({
+      ...datos,
+      password_confirmation: datos.password
+    }),
   }),
 
   recuperarContrasena: (email) => apiCall('/recuperar-contrasena', {

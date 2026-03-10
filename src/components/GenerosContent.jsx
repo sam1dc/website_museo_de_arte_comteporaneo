@@ -1,26 +1,44 @@
-import { useState } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { generosAdminService } from '../services';
 
 const GenerosContent = () => {
-  const [generos, setGeneros] = useState([
-    { id: 1, nombre: 'Pintura', caracteristicas: 'Técnica, Dimensiones, Soporte' },
-    { id: 2, nombre: 'Escultura', caracteristicas: 'Material, Peso, Dimensiones (largo, ancho, profundidad)' },
-    { id: 3, nombre: 'Fotografía', caracteristicas: 'Técnica, Dimensiones, Edición' },
-    { id: 4, nombre: 'Cerámica', caracteristicas: 'Material, Técnica, Dimensiones' },
-    { id: 5, nombre: 'Orfebrería', caracteristicas: 'Material, Peso, Técnica' }
-  ]);
-
+  const [generos, setGeneros] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [currentGenero, setCurrentGenero] = useState({ nombre: '', caracteristicas: '' });
+  const [enviando, setEnviando] = useState(false);
+  const cargadoRef = useRef(false);
+  const [currentGenero, setCurrentGenero] = useState({ nombre: '', descripcion: '' });
+
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarGeneros = async () => {
+      try {
+        setCargando(true);
+        const generosData = await generosAdminService.obtenerTodos();
+        setGeneros(generosData);
+      } catch (err) {
+        setError('Error al cargar los géneros');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarGeneros();
+  }, []);
 
   const handleOpen = (genero = null) => {
     if (genero) {
       setCurrentGenero(genero);
       setEditMode(true);
     } else {
-      setCurrentGenero({ nombre: '', caracteristicas: '' });
+      setCurrentGenero({ nombre: '', descripcion: '' });
       setEditMode(false);
     }
     setOpen(true);
@@ -28,24 +46,49 @@ const GenerosContent = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setCurrentGenero({ nombre: '', caracteristicas: '' });
   };
 
-  const handleSave = () => {
-    if (editMode) {
-      setGeneros(generos.map(g => g.id === currentGenero.id ? currentGenero : g));
-    } else {
-      setGeneros([...generos, { ...currentGenero, id: Date.now() }]);
+  const handleSave = async () => {
+    try {
+      setEnviando(true);
+      setError(null);
+
+      if (editMode) {
+        await generosAdminService.actualizar(currentGenero.id, currentGenero);
+        setGeneros(generos.map(g => g.id === currentGenero.id ? currentGenero : g));
+      } else {
+        const nuevoGenero = await generosAdminService.crear(currentGenero);
+        setGeneros([...generos, nuevoGenero]);
+      }
+      handleClose();
+    } catch (err) {
+      setError(err.message || 'Error al guardar el género');
+      console.error(err);
+    } finally {
+      setEnviando(false);
     }
-    handleClose();
   };
 
-  const handleDelete = (id) => {
-    setGeneros(generos.filter(g => g.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este género?')) {
+      try {
+        await generosAdminService.eliminar(id);
+        setGeneros(generos.filter(g => g.id !== id));
+      } catch (err) {
+        setError('Error al eliminar el género');
+        console.error(err);
+      }
+    }
   };
 
   return (
     <Box sx={{ width: '100%' }}>
+      {error && (
+        <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
       <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" sx={{ width: '100%' }}>
         <Box>
           <Typography variant="h4" className="font-light tracking-wide mb-2">
@@ -73,13 +116,19 @@ const GenerosContent = () => {
         </Button>
       </Box>
 
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : (
+      <>
       {/* Vista Desktop */}
       <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
         <Table sx={{ width: '100%' }}>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#fafafa' }}>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Género</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Características</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Descripción</TableCell>
               <TableCell align="right" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -91,7 +140,7 @@ const GenerosContent = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2" className="text-gray-600">
-                    {genero.caracteristicas}
+                    {genero.descripcion}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
@@ -124,11 +173,13 @@ const GenerosContent = () => {
               </Box>
             </Box>
             <Typography variant="body2" className="text-gray-600">
-              <span className="font-medium">Características:</span> {genero.caracteristicas}
+              <span className="font-medium">Descripción:</span> {genero.descripcion}
             </Typography>
           </Paper>
         ))}
       </Box>
+      </>
+      )}
 
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -145,14 +196,13 @@ const GenerosContent = () => {
               variant="standard"
             />
             <TextField
-              label="Características"
-              value={currentGenero.caracteristicas}
-              onChange={(e) => setCurrentGenero({ ...currentGenero, caracteristicas: e.target.value })}
+              label="Descripción"
+              value={currentGenero.descripcion}
+              onChange={(e) => setCurrentGenero({ ...currentGenero, descripcion: e.target.value })}
               fullWidth
               multiline
               rows={3}
               variant="standard"
-              helperText="Ej: Material, Peso, Dimensiones"
             />
           </Box>
         </DialogContent>
@@ -162,6 +212,7 @@ const GenerosContent = () => {
           </Button>
           <Button
             onClick={handleSave}
+            disabled={enviando}
             variant="contained"
             sx={{
               backgroundColor: '#000',
@@ -170,7 +221,7 @@ const GenerosContent = () => {
               '&:hover': { backgroundColor: '#1a1a1a' }
             }}
           >
-            Guardar
+            {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
           </Button>
         </DialogActions>
       </Dialog>

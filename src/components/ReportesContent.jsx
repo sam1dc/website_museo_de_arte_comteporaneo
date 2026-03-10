@@ -1,243 +1,133 @@
-import { useState } from 'react';
-import { Box, Typography, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Tabs, Tab } from '@mui/material';
-import { Search as SearchIcon, Assessment as AssessmentIcon } from '@mui/icons-material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Paper, Grid, CircularProgress, Alert } from '@mui/material';
+import { reportesAdminService } from '../services';
 
 const ReportesContent = () => {
-  const [tabValue, setTabValue] = useState(0);
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+  const [reportes, setReportes] = useState({
+    obrasVendidas: [],
+    facturacion: {},
+    membresias: {}
+  });
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+  const cargadoRef = useRef(false);
 
-  // Data mock para reportes
-  const obrasVendidas = [
-    { obra: 'Guernica', artista: 'Pablo Picasso', comprador: 'Juan Pérez', precio: 25000, fecha: '2024-01-20' },
-    { obra: 'Las Dos Fridas', artista: 'Frida Kahlo', comprador: 'María García', precio: 18000, fecha: '2024-02-15' }
-  ];
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
 
-  const resumenFacturacion = [
-    { codigo: 'FAC-2024-001', fecha: '2024-01-20', precioObra: 25000, gananciaMuseo: 2500, porcentaje: 10, total: 28750 },
-    { codigo: 'FAC-2024-002', fecha: '2024-02-15', precioObra: 18000, gananciaMuseo: 900, porcentaje: 5, total: 20700 }
-  ];
+    const cargarReportes = async () => {
+      try {
+        setCargando(true);
+        const [obrasVendidas, facturacion, membresias] = await Promise.all([
+          reportesAdminService.obrasVendidas(),
+          reportesAdminService.facturacion(),
+          reportesAdminService.membresias()
+        ]);
+        setReportes({ obrasVendidas, facturacion, membresias });
+      } catch (err) {
+        setError('Error al cargar los reportes');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
 
-  const resumenMembresias = [
-    { comprador: 'Juan Pérez', email: 'juan.perez@email.com', fechaRegistro: '2024-01-15', monto: 10 },
-    { comprador: 'María García', email: 'maria.garcia@email.com', fechaRegistro: '2024-02-20', monto: 10 },
-    { comprador: 'Carlos López', email: 'carlos.lopez@email.com', fechaRegistro: '2023-12-10', monto: 10 }
-  ];
-
-  const handleBuscar = () => {
-    // Aquí se implementaría el filtrado por fechas
-    console.log('Buscar desde:', fechaInicio, 'hasta:', fechaFin);
-  };
-
-  const totalRecaudado = resumenFacturacion.reduce((sum, f) => sum + f.total, 0);
-  const totalGanancias = resumenFacturacion.reduce((sum, f) => sum + f.gananciaMuseo, 0);
-  const totalMembresias = resumenMembresias.length * 10;
+    cargarReportes();
+  }, []);
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box className="mb-6">
+      {error && (
+        <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
+      <Box className="mb-12">
         <Typography variant="h4" className="font-light tracking-wide mb-2">
-          Reportes y Consultas
+          Reportes y Estadísticas
         </Typography>
         <Typography variant="body2" className="text-gray-600">
-          Consulta información del sistema por período
+          Análisis de ventas y actividad del museo
         </Typography>
       </Box>
 
-      {/* Filtros de Fecha */}
-      <Paper className="p-4 sm:p-6 mb-6" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5' }}>
-        <Box className="flex flex-col sm:flex-row gap-4 items-end">
-          <TextField
-            label="Fecha Inicio"
-            type="date"
-            value={fechaInicio}
-            onChange={(e) => setFechaInicio(e.target.value)}
-            variant="standard"
-            InputLabelProps={{ shrink: true }}
-            className="flex-1"
-          />
-          <TextField
-            label="Fecha Fin"
-            type="date"
-            value={fechaFin}
-            onChange={(e) => setFechaFin(e.target.value)}
-            variant="standard"
-            InputLabelProps={{ shrink: true }}
-            className="flex-1"
-          />
-          <Button
-            variant="contained"
-            startIcon={<SearchIcon />}
-            onClick={handleBuscar}
-            sx={{
-              backgroundColor: '#000',
-              color: '#fff',
-              borderRadius: 0,
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontWeight: 300,
-              '&:hover': { backgroundColor: '#1a1a1a' }
-            }}
-          >
-            Buscar
-          </Button>
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
         </Box>
-      </Paper>
-
-      {/* Tabs de Reportes */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs 
-          value={tabValue} 
-          onChange={(e, newValue) => setTabValue(newValue)}
-          sx={{
-            '& .MuiTab-root': {
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              fontWeight: 300,
-              color: '#666',
-              '&.Mui-selected': {
-                color: '#000'
-              }
-            },
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#000'
-            }
-          }}
-        >
-          <Tab label="Obras Vendidas" />
-          <Tab label="Facturación" />
-          <Tab label="Membresías" />
-        </Tabs>
-      </Box>
-
-      {/* Reporte 1: Obras Vendidas */}
-      {tabValue === 0 && (
-        <Box>
-          <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
-            <Table sx={{ width: '100%' }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                  <TableCell sx={{ fontWeight: 500 }}>Obra</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Artista</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Comprador</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Precio</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Fecha</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {obrasVendidas.map((obra, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell className="font-medium">{obra.obra}</TableCell>
-                    <TableCell>{obra.artista}</TableCell>
-                    <TableCell>{obra.comprador}</TableCell>
-                    <TableCell>${obra.precio.toLocaleString()}</TableCell>
-                    <TableCell>{new Date(obra.fecha).toLocaleDateString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-
-      {/* Reporte 2: Resumen de Facturación */}
-      {tabValue === 1 && (
-        <Box>
-          <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%', mb: 3 }}>
-            <Table sx={{ width: '100%' }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                  <TableCell sx={{ fontWeight: 500 }}>Código</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Fecha</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Precio Obra</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Ganancia (%)</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Ganancia ($)</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Total</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {resumenFacturacion.map((factura, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell className="font-medium">{factura.codigo}</TableCell>
-                    <TableCell>{new Date(factura.fecha).toLocaleDateString()}</TableCell>
-                    <TableCell>${factura.precioObra.toLocaleString()}</TableCell>
-                    <TableCell>{factura.porcentaje}%</TableCell>
-                    <TableCell>${factura.gananciaMuseo.toLocaleString()}</TableCell>
-                    <TableCell className="font-medium">${factura.total.toLocaleString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Resumen Total */}
-          <Paper className="p-6 bg-gray-50" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5' }}>
-            <Box className="flex items-center gap-2 mb-4">
-              <AssessmentIcon />
-              <Typography variant="h6" className="font-light">Resumen del Período</Typography>
-            </Box>
-            <Box className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Box>
-                <Typography variant="body2" className="text-gray-600 mb-1">Total Recaudado</Typography>
-                <Typography variant="h5" className="font-light">${totalRecaudado.toLocaleString()}</Typography>
+      ) : (
+      <Grid container spacing={4}>
+        {/* Resumen de Facturación */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 4, border: '1px solid #e5e5e5', boxShadow: 'none' }}>
+            <Typography variant="h6" className="font-light mb-4">
+              Facturación
+            </Typography>
+            <Box className="space-y-2">
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Total Ingresos:</Typography>
+                <Typography className="font-medium">
+                  ${reportes.facturacion.total_ingresos?.toLocaleString() || 0}
+                </Typography>
               </Box>
-              <Box>
-                <Typography variant="body2" className="text-gray-600 mb-1">Ganancia Museo</Typography>
-                <Typography variant="h5" className="font-light">${totalGanancias.toLocaleString()}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="body2" className="text-gray-600 mb-1">Facturas</Typography>
-                <Typography variant="h5" className="font-light">{resumenFacturacion.length}</Typography>
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Facturas Emitidas:</Typography>
+                <Typography className="font-medium">
+                  {reportes.facturacion.total_facturas || 0}
+                </Typography>
               </Box>
             </Box>
           </Paper>
-        </Box>
-      )}
+        </Grid>
 
-      {/* Reporte 3: Resumen de Membresías */}
-      {tabValue === 2 && (
-        <Box>
-          <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%', mb: 3 }}>
-            <Table sx={{ width: '100%' }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#fafafa' }}>
-                  <TableCell sx={{ fontWeight: 500 }}>Comprador</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Fecha Registro</TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>Monto</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {resumenMembresias.map((membresia, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell className="font-medium">{membresia.comprador}</TableCell>
-                    <TableCell>{membresia.email}</TableCell>
-                    <TableCell>{new Date(membresia.fechaRegistro).toLocaleDateString()}</TableCell>
-                    <TableCell>${membresia.monto}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          {/* Resumen Total */}
-          <Paper className="p-6 bg-gray-50" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5' }}>
-            <Box className="flex items-center gap-2 mb-4">
-              <AssessmentIcon />
-              <Typography variant="h6" className="font-light">Resumen del Período</Typography>
-            </Box>
-            <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Box>
-                <Typography variant="body2" className="text-gray-600 mb-1">Total Membresías</Typography>
-                <Typography variant="h5" className="font-light">{resumenMembresias.length}</Typography>
+        {/* Resumen de Membresías */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 4, border: '1px solid #e5e5e5', boxShadow: 'none' }}>
+            <Typography variant="h6" className="font-light mb-4">
+              Membresías
+            </Typography>
+            <Box className="space-y-2">
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Total Miembros:</Typography>
+                <Typography className="font-medium">
+                  {reportes.membresias.total_miembros || 0}
+                </Typography>
               </Box>
-              <Box>
-                <Typography variant="body2" className="text-gray-600 mb-1">Total Recaudado</Typography>
-                <Typography variant="h5" className="font-light">${totalMembresias}</Typography>
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Activas:</Typography>
+                <Typography className="font-medium">
+                  {reportes.membresias.activas || 0}
+                </Typography>
               </Box>
             </Box>
           </Paper>
-        </Box>
+        </Grid>
+
+        {/* Obras Vendidas */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 4, border: '1px solid #e5e5e5', boxShadow: 'none' }}>
+            <Typography variant="h6" className="font-light mb-4">
+              Obras Vendidas
+            </Typography>
+            <Box className="space-y-2">
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Total Vendidas:</Typography>
+                <Typography className="font-medium">
+                  {reportes.obrasVendidas.length || 0}
+                </Typography>
+              </Box>
+              <Box className="flex justify-between">
+                <Typography className="text-gray-600">Valor Total:</Typography>
+                <Typography className="font-medium">
+                  ${reportes.obrasVendidas.reduce((sum, obra) => sum + (obra.precio || 0), 0).toLocaleString()}
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
       )}
     </Box>
   );

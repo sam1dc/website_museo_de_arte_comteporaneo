@@ -1,44 +1,42 @@
-import { useState } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from '@mui/material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { artistasAdminService } from '../services';
 
 const ArtistasContent = () => {
-  const [artistas, setArtistas] = useState([
-    { 
-      id: 1, 
-      nombre: 'Pablo Picasso', 
-      nacionalidad: 'Español',
-      fechaNacimiento: '1881-10-25',
-      biografia: 'Pintor y escultor español, creador del cubismo',
-      generos: 'Pintura, Escultura'
-    },
-    { 
-      id: 2, 
-      nombre: 'Frida Kahlo', 
-      nacionalidad: 'Mexicana',
-      fechaNacimiento: '1907-07-06',
-      biografia: 'Pintora mexicana conocida por sus autorretratos',
-      generos: 'Pintura'
-    },
-    { 
-      id: 3, 
-      nombre: 'Auguste Rodin', 
-      nacionalidad: 'Francés',
-      fechaNacimiento: '1840-11-12',
-      biografia: 'Escultor francés, considerado padre de la escultura moderna',
-      generos: 'Escultura'
-    }
-  ]);
-
+  const [artistas, setArtistas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const cargadoRef = useRef(false);
   const [currentArtista, setCurrentArtista] = useState({
     nombre: '',
-    nacionalidad: '',
-    fechaNacimiento: '',
-    biografia: '',
-    generos: ''
+    pais: '',
+    fecha_nacimiento: '',
+    biografia: ''
   });
+
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarArtistas = async () => {
+      try {
+        setCargando(true);
+        const artistasData = await artistasAdminService.obtenerTodos();
+        setArtistas(artistasData);
+      } catch (err) {
+        setError('Error al cargar los artistas');
+        console.error(err);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarArtistas();
+  }, []);
 
   const handleOpen = (artista = null) => {
     if (artista) {
@@ -47,10 +45,9 @@ const ArtistasContent = () => {
     } else {
       setCurrentArtista({
         nombre: '',
-        nacionalidad: '',
-        fechaNacimiento: '',
-        biografia: '',
-        generos: ''
+        pais: '',
+        fecha_nacimiento: '',
+        biografia: ''
       });
       setEditMode(false);
     }
@@ -59,26 +56,39 @@ const ArtistasContent = () => {
 
   const handleClose = () => {
     setOpen(false);
-    setCurrentArtista({
-      nombre: '',
-      nacionalidad: '',
-      fechaNacimiento: '',
-      biografia: '',
-      generos: ''
-    });
   };
 
-  const handleSave = () => {
-    if (editMode) {
-      setArtistas(artistas.map(a => a.id === currentArtista.id ? currentArtista : a));
-    } else {
-      setArtistas([...artistas, { ...currentArtista, id: Date.now() }]);
+  const handleSave = async () => {
+    try {
+      setEnviando(true);
+      setError(null);
+
+      if (editMode) {
+        await artistasAdminService.actualizar(currentArtista.id, currentArtista);
+        setArtistas(artistas.map(a => a.id === currentArtista.id ? currentArtista : a));
+      } else {
+        const nuevoArtista = await artistasAdminService.crear(currentArtista);
+        setArtistas([...artistas, nuevoArtista]);
+      }
+      handleClose();
+    } catch (err) {
+      setError(err.message || 'Error al guardar el artista');
+      console.error(err);
+    } finally {
+      setEnviando(false);
     }
-    handleClose();
   };
 
-  const handleDelete = (id) => {
-    setArtistas(artistas.filter(a => a.id !== id));
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este artista?')) {
+      try {
+        await artistasAdminService.eliminar(id);
+        setArtistas(artistas.filter(a => a.id !== id));
+      } catch (err) {
+        setError('Error al eliminar el artista');
+        console.error(err);
+      }
+    }
   };
 
   const handleChange = (field, value) => {
@@ -87,6 +97,12 @@ const ArtistasContent = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
+      {error && (
+        <Alert severity="error" className="mb-6" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
       <Box className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4" sx={{ width: '100%' }}>
         <Box>
           <Typography variant="h4" className="font-light tracking-wide mb-2">
@@ -114,15 +130,20 @@ const ArtistasContent = () => {
         </Button>
       </Box>
 
+      {cargando ? (
+        <Box className="flex justify-center py-16">
+          <CircularProgress />
+        </Box>
+      ) : (
+      <>
       {/* Vista Desktop */}
       <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
         <Table sx={{ width: '100%' }}>
           <TableHead>
             <TableRow sx={{ backgroundColor: '#fafafa' }}>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nombre</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nacionalidad</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Fecha Nacimiento</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Géneros</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>País</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nacimiento</TableCell>
               <TableCell align="right" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -132,13 +153,8 @@ const ArtistasContent = () => {
                 <TableCell>
                   <Typography className="font-medium">{artista.nombre}</Typography>
                 </TableCell>
-                <TableCell>{artista.nacionalidad}</TableCell>
-                <TableCell>{new Date(artista.fechaNacimiento).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <Typography variant="body2" className="text-gray-600">
-                    {artista.generos}
-                  </Typography>
-                </TableCell>
+                <TableCell>{artista.pais}</TableCell>
+                <TableCell>{new Date(artista.fecha_nacimiento).toLocaleDateString()}</TableCell>
                 <TableCell align="right">
                   <IconButton size="small" onClick={() => handleOpen(artista)}>
                     <EditIcon fontSize="small" />
@@ -160,7 +176,7 @@ const ArtistasContent = () => {
             <Box className="flex justify-between items-start mb-3">
               <Box>
                 <Typography className="font-medium text-lg">{artista.nombre}</Typography>
-                <Typography variant="body2" className="text-gray-600">{artista.nacionalidad}</Typography>
+                <Typography variant="body2" className="text-gray-600">{artista.pais}</Typography>
               </Box>
               <Box>
                 <IconButton size="small" onClick={() => handleOpen(artista)}>
@@ -171,15 +187,14 @@ const ArtistasContent = () => {
                 </IconButton>
               </Box>
             </Box>
-            <Typography variant="body2" className="text-gray-600 mb-2">
-              <span className="font-medium">Nacimiento:</span> {new Date(artista.fechaNacimiento).toLocaleDateString()}
-            </Typography>
             <Typography variant="body2" className="text-gray-600">
-              <span className="font-medium">Géneros:</span> {artista.generos}
+              <span className="font-medium">Nacimiento:</span> {new Date(artista.fecha_nacimiento).toLocaleDateString()}
             </Typography>
           </Paper>
         ))}
       </Box>
+      </>
+      )}
 
       {/* Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
@@ -196,17 +211,17 @@ const ArtistasContent = () => {
               variant="standard"
             />
             <TextField
-              label="Nacionalidad"
-              value={currentArtista.nacionalidad}
-              onChange={(e) => handleChange('nacionalidad', e.target.value)}
+              label="País"
+              value={currentArtista.pais}
+              onChange={(e) => handleChange('pais', e.target.value)}
               fullWidth
               variant="standard"
             />
             <TextField
               label="Fecha de Nacimiento"
               type="date"
-              value={currentArtista.fechaNacimiento}
-              onChange={(e) => handleChange('fechaNacimiento', e.target.value)}
+              value={currentArtista.fecha_nacimiento}
+              onChange={(e) => handleChange('fecha_nacimiento', e.target.value)}
               fullWidth
               variant="standard"
               InputLabelProps={{ shrink: true }}
@@ -220,14 +235,6 @@ const ArtistasContent = () => {
               rows={3}
               variant="standard"
             />
-            <TextField
-              label="Géneros"
-              value={currentArtista.generos}
-              onChange={(e) => handleChange('generos', e.target.value)}
-              fullWidth
-              variant="standard"
-              helperText="Ej: Pintura, Escultura"
-            />
           </Box>
         </DialogContent>
         <DialogActions className="p-6">
@@ -236,6 +243,7 @@ const ArtistasContent = () => {
           </Button>
           <Button
             onClick={handleSave}
+            disabled={enviando}
             variant="contained"
             sx={{
               backgroundColor: '#000',
@@ -244,7 +252,7 @@ const ArtistasContent = () => {
               '&:hover': { backgroundColor: '#1a1a1a' }
             }}
           >
-            Guardar
+            {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
           </Button>
         </DialogActions>
       </Dialog>

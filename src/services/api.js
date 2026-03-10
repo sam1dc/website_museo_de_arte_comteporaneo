@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const API_BASE_URL = 'http://127.0.0.1:8000/api';
+export const API_BASE_URL = 'https://mottled-leonora-deprecatively.ngrok-free.dev/api';
 
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -7,6 +7,7 @@ export const apiCall = async (endpoint, options = {}) => {
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
     },
     ...options,
   };
