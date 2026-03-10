@@ -1,5 +1,5 @@
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { Dashboard as DashboardIcon, Person as PersonIcon, Category as CategoryIcon, Palette as PaletteIcon, Image as ImageIcon, ShoppingCart as ShoppingCartIcon, Receipt as ReceiptIcon, Assessment as AssessmentIcon } from '@mui/icons-material';
+import { Dashboard as DashboardIcon, Person as PersonIcon, Category as CategoryIcon, Palette as PaletteIcon, Image as ImageIcon, ShoppingCart as ShoppingCartIcon, Receipt as ReceiptIcon, Assessment as AssessmentIcon, RequestQuote as RequestQuoteIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ mobileOpen, onMobileClose }) => {
@@ -13,6 +13,7 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
     { id: 'artistas', label: 'Artistas', icon: <PaletteIcon />, path: '/artistas' },
     { id: 'obras', label: 'Obras', icon: <ImageIcon />, path: '/obras' },
     { id: 'compradores', label: 'Compradores', icon: <ShoppingCartIcon />, path: '/compradores' },
+    { id: 'solicitudes', label: 'Solicitudes Compra', icon: <RequestQuoteIcon />, path: '/solicitudes-compra' },
     { id: 'facturacion', label: 'Facturación', icon: <ReceiptIcon />, path: '/facturacion' },
     { id: 'reportes', label: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' }
   ];

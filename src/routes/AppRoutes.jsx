@@ -10,6 +10,7 @@ import ArtistasView from '../views/ArtistasView';
 import ObrasView from '../views/ObrasView';
 import CompradoresView from '../views/CompradoresView';
 import FacturacionView from '../views/FacturacionView';
+import SolicitudesCompraView from '../views/SolicitudesCompraView';
 import ReportesView from '../views/ReportesView';
 import CatalogoView from '../views/CatalogoView';
 import DetalleObraView from '../views/DetalleObraView';
@@ -36,6 +37,7 @@ const AppRoutes = () => {
         <Route path="artistas" element={<ArtistasView />} />
         <Route path="obras" element={<ObrasView />} />
         <Route path="compradores" element={<CompradoresView />} />
+        <Route path="solicitudes-compra" element={<SolicitudesCompraView />} />
         <Route path="facturacion" element={<FacturacionView />} />
         <Route path="reportes" element={<ReportesView />} />
       </Route>
