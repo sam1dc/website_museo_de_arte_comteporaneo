@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Box, Button, Container } from '@mui/material';
+import Footer from '../components/Footer';
 
 const PublicLayout = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const PublicLayout = () => {
   };
 
   return (
-    <Box className="min-h-screen bg-white">
+    <Box className="min-h-screen bg-white flex flex-col">
       <AppBar 
         position="sticky" 
         elevation={0}
@@ -33,7 +34,7 @@ const PublicLayout = () => {
             </Link>
 
             <Box className="flex items-center gap-6">
-              <Link to="/museo-de-arte-contemporaneo" className="no-underline">
+              <Link to="/museo-de-arte-contemporaneo/catalogo" className="no-underline">
                 <Typography 
                   className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
                   sx={{ letterSpacing: '0.1em', fontWeight: 300 }}
@@ -92,9 +93,11 @@ const PublicLayout = () => {
         </Container>
       </AppBar>
 
-      <Box component="main">
+      <Box component="main" className="flex-grow">
         <Outlet />
       </Box>
+
+      <Footer />
     </Box>
   );
 };
