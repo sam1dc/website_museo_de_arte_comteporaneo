@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { Box, TextField, Button, Alert, Typography, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Stepper, Step, StepLabel, MenuItem, Select, InputLabel } from '@mui/material';
+import { Box, TextField, Button, Alert, Typography, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Stepper, Step, StepLabel, MenuItem, Select, InputLabel, IconButton, InputAdornment, CircularProgress } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import useForm from '../hooks/useForm';
 
-const RegistroForm = ({ onSubmit }) => {
+const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
   const [error, setError] = useState('');
   const [paso, setPaso] = useState(0);
   const [membresia, setMembresia] = useState('ninguna');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+  const [cargando, setCargando] = useState(false);
   const [preguntas, setPreguntas] = useState([
     { pregunta: '', respuesta: '' },
     { pregunta: '', respuesta: '' },
@@ -108,7 +112,7 @@ const RegistroForm = ({ onSubmit }) => {
     setPaso(paso - 1);
   };
 
-  const handleSubmitFinal = () => {
+  const handleSubmitFinal = async () => {
     const datosRegistro = {
       nombre: values.nombre,
       apellido: values.apellido,
@@ -131,7 +135,7 @@ const RegistroForm = ({ onSubmit }) => {
       datosRegistro.tarjeta_exp_anio = parseInt(values.tarjeta_exp_anio);
     }
 
-    onSubmit(datosRegistro);
+    await onSubmit(datosRegistro);
   };
 
   const inputStyles = {
@@ -254,7 +258,7 @@ const RegistroForm = ({ onSubmit }) => {
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TextField
               label="Contraseña"
-              type="password"
+              type={mostrarPassword ? 'text' : 'password'}
               name="password"
               value={values.password}
               onChange={handleChange}
@@ -262,10 +266,23 @@ const RegistroForm = ({ onSubmit }) => {
               fullWidth
               variant="standard"
               sx={inputStyles}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setMostrarPassword(!mostrarPassword)}
+                      edge="end"
+                      sx={{ color: '#666' }}
+                    >
+                      {mostrarPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
             <TextField
               label="Confirmar Contraseña"
-              type="password"
+              type={mostrarConfirmPassword ? 'text' : 'password'}
               name="confirmPassword"
               value={values.confirmPassword}
               onChange={handleChange}
@@ -273,6 +290,19 @@ const RegistroForm = ({ onSubmit }) => {
               fullWidth
               variant="standard"
               sx={inputStyles}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setMostrarConfirmPassword(!mostrarConfirmPassword)}
+                      edge="end"
+                      sx={{ color: '#666' }}
+                    >
+                      {mostrarConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
           </Box>
         </Box>
@@ -435,15 +465,28 @@ const RegistroForm = ({ onSubmit }) => {
               sx={inputStyles}
               placeholder="1234"
             />
-            <TextField
-              label="Marca (Visa, Mastercard, etc.)"
-              name="tarjeta_marca"
-              value={values.tarjeta_marca}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-              sx={inputStyles}
-            />
+            <FormControl fullWidth variant="standard" required>
+              <InputLabel sx={{ color: '#666', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+                Marca de Tarjeta
+              </InputLabel>
+              <Select
+                name="tarjeta_marca"
+                value={values.tarjeta_marca}
+                onChange={handleChange}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
+                  '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#000' },
+                }}
+              >
+                <MenuItem value="Visa">Visa</MenuItem>
+                <MenuItem value="Mastercard">Mastercard</MenuItem>
+                <MenuItem value="American Express">American Express</MenuItem>
+                <MenuItem value="Discover">Discover</MenuItem>
+                <MenuItem value="Diners Club">Diners Club</MenuItem>
+                <MenuItem value="JCB">JCB</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
 
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -483,6 +526,7 @@ const RegistroForm = ({ onSubmit }) => {
           <Button
             onClick={handleAtras}
             variant="outlined"
+            disabled={cargandoPadre}
             sx={{
               borderColor: '#000',
               color: '#000',
@@ -506,6 +550,7 @@ const RegistroForm = ({ onSubmit }) => {
           onClick={handleSiguiente}
           variant="contained"
           fullWidth
+          disabled={cargandoPadre}
           sx={{ 
             backgroundColor: '#000',
             color: '#fff',
@@ -515,12 +560,19 @@ const RegistroForm = ({ onSubmit }) => {
             fontWeight: 300,
             borderRadius: 0,
             '&:hover': { backgroundColor: '#1a1a1a' },
+            '&:disabled': { backgroundColor: '#999' },
             textTransform: 'uppercase'
           }}
         >
-          {paso === 3 ? 'Finalizar Registro' : 
-           paso === 2 && membresia === 'ninguna' ? 'Registrarse' : 
-           'Siguiente'}
+          {cargandoPadre ? (
+            <CircularProgress size={24} sx={{ color: '#fff' }} />
+          ) : (
+            <>
+              {paso === 3 ? 'Finalizar Registro' : 
+               paso === 2 && membresia === 'ninguna' ? 'Registrarse' : 
+               'Siguiente'}
+            </>
+          )}
         </Button>
       </Box>
     </Box>

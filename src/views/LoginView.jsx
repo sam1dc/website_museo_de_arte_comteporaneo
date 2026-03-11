@@ -52,10 +52,9 @@ const LoginView = () => {
       login(response);
       navigate('/museo-de-arte-contemporaneo');
     } catch (err) {
+      setCargando(false);
       setError(err.message || 'Error al registrarse');
       console.error(err);
-    } finally {
-      setCargando(false);
     }
   };
 
@@ -130,12 +129,6 @@ const LoginView = () => {
 
               <LoginForm onSubmit={handleLogin} disabled={cargando} />
 
-              {cargando && (
-                <Box className="flex justify-center my-4">
-                  <CircularProgress size={24} />
-                </Box>
-              )}
-
               {mensajeExito && (
                 <Alert severity="success" className="mt-4" onClose={() => setMensajeExito('')}>
                   {mensajeExito}
@@ -179,13 +172,7 @@ const LoginView = () => {
                 </Alert>
               )}
 
-              <RegistroForm onSubmit={handleRegistro} disabled={cargando} />
-              
-              {cargando && (
-                <Box className="flex justify-center my-4">
-                  <CircularProgress size={24} />
-                </Box>
-              )}
+              <RegistroForm onSubmit={handleRegistro} cargando={cargando} />
               
               <Box className="mt-6 text-center">
                 <MuiLink

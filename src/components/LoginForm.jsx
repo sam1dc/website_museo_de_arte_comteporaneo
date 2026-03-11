@@ -1,7 +1,7 @@
-import { TextField, Button, Box, Link } from '@mui/material';
+import { TextField, Button, Box, CircularProgress } from '@mui/material';
 import useForm from '../hooks/useForm';
 
-const LoginForm = ({ onSubmit }) => {
+const LoginForm = ({ onSubmit, disabled }) => {
   const { values, handleChange } = useForm({
     email: '',
     password: ''
@@ -23,6 +23,7 @@ const LoginForm = ({ onSubmit }) => {
         required
         fullWidth
         variant="standard"
+        disabled={disabled}
         sx={{
           '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
           '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
@@ -41,6 +42,7 @@ const LoginForm = ({ onSubmit }) => {
         required
         fullWidth
         variant="standard"
+        disabled={disabled}
         sx={{
           '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
           '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
@@ -54,6 +56,7 @@ const LoginForm = ({ onSubmit }) => {
         type="submit"
         variant="contained"
         fullWidth
+        disabled={disabled}
         className="mt-4"
         sx={{ 
           backgroundColor: '#000',
@@ -64,10 +67,11 @@ const LoginForm = ({ onSubmit }) => {
           fontWeight: 300,
           borderRadius: 0,
           '&:hover': { backgroundColor: '#1a1a1a' },
+          '&:disabled': { backgroundColor: '#999' },
           textTransform: 'uppercase'
         }}
       >
-        Acceder
+        {disabled ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Acceder'}
       </Button>
     </Box>
   );

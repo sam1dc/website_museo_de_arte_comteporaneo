@@ -79,8 +79,8 @@ const DetalleObraView = () => {
         ← Volver al catálogo
       </Button>
 
-      <Grid container spacing={{ xs: 4, md: 6 }} justifyContent="center">
-        <Grid item xs={12} md={6}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div>
           <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden border border-gray-200">
             <img
               src={obra.foto_url}
@@ -88,9 +88,9 @@ const DetalleObraView = () => {
               className="w-full h-full object-contain bg-gray-50"
             />
           </div>
-        </Grid>
+        </div>
 
-        <Grid item xs={12} md={6}>
+        <div>
           <Box className="flex gap-2 mb-4">
             <Chip 
               label={obra.genero?.nombre} 
@@ -406,8 +406,8 @@ const DetalleObraView = () => {
               </Button>
             )}
           </Box>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
       </>
       ) : null}
     </Container>
