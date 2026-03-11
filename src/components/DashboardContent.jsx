@@ -138,11 +138,7 @@ const DashboardContent = () => {
         setCargando(true);
         
         const dashboardData = await dashboardService.obtenerResumen();
-        setStats({
-          compradores: dashboardData.usuarios_count || 0,
-          obras: dashboardData.obras_count || 0
-        });
-
+        
         const rangoFechas = {
           fecha_inicio: fechas.inicio,
           fecha_fin: fechas.fin
@@ -152,6 +148,15 @@ const DashboardContent = () => {
           reportesAdminService.facturacion(rangoFechas),
           reportesAdminService.obrasVendidas(rangoFechas)
         ]);
+
+        // Contar obras únicas vendidas
+        const obrasVendidasUnicas = new Set(obrasVendidasRes.data?.map(v => v.obra_id) || []).size;
+        
+        setStats({
+          compradores: dashboardData.usuarios_count || 0,
+          obras: dashboardData.obras_count || 0,
+          obrasDisponibles: (dashboardData.obras_count || 0) - obrasVendidasUnicas
+        });
 
         const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
         const topArtistas = procesarTopArtistas(obrasVendidasRes.data || []);
@@ -185,11 +190,7 @@ const DashboardContent = () => {
       setCargandoGraficas(true);
       
       const dashboardData = await dashboardService.obtenerResumen();
-      setStats({
-        compradores: dashboardData.usuarios_count || 0,
-        obras: dashboardData.obras_count || 0
-      });
-
+      
       const rangoFechas = {
         fecha_inicio: fechaInicio,
         fecha_fin: fechaFin
@@ -199,6 +200,15 @@ const DashboardContent = () => {
         reportesAdminService.facturacion(rangoFechas),
         reportesAdminService.obrasVendidas(rangoFechas)
       ]);
+
+      // Contar obras únicas vendidas
+      const obrasVendidasUnicas = new Set(obrasVendidasRes.data?.map(v => v.obra_id) || []).size;
+      
+      setStats({
+        compradores: dashboardData.usuarios_count || 0,
+        obras: dashboardData.obras_count || 0,
+        obrasDisponibles: (dashboardData.obras_count || 0) - obrasVendidasUnicas
+      });
 
       const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
       const topArtistas = procesarTopArtistas(obrasVendidasRes.data || []);
@@ -318,7 +328,7 @@ const DashboardContent = () => {
                 Obras Disponibles
               </Typography>
               <Typography variant="h2" className="font-light">
-                {Math.floor(stats?.obras * 0.7)}
+                {stats?.obrasDisponibles || 0}
               </Typography>
             </Box>
           </div>
