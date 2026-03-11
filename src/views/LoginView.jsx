@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Alert, ToggleButtonGroup, ToggleButton, Link as MuiLink, CircularProgress } from '@mui/material';
+import { Box, Container, Typography, Alert, ToggleButtonGroup, ToggleButton, Link as MuiLink, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import RegistroForm from '../components/RegistroForm';
+import RecuperarCodigoForm from '../components/RecuperarCodigoForm';
 import { useAuth } from '../hooks/useAuth';
 import { authService } from '../services';
 
@@ -10,6 +12,8 @@ const LoginView = () => {
   const [error, setError] = useState('');
   const [mode, setMode] = useState('login'); // 'login' o 'registro'
   const [cargando, setCargando] = useState(false);
+  const [recuperarOpen, setRecuperarOpen] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -132,7 +136,25 @@ const LoginView = () => {
                 </Box>
               )}
 
+              {mensajeExito && (
+                <Alert severity="success" className="mt-4" onClose={() => setMensajeExito('')}>
+                  {mensajeExito}
+                </Alert>
+              )}
+
               <Box className="mt-6 text-center">
+                <MuiLink
+                  onClick={() => setRecuperarOpen(true)}
+                  className="cursor-pointer text-xs tracking-wider block mb-2"
+                  underline="hover"
+                  sx={{ 
+                    color: '#999',
+                    '&:hover': { color: '#666' },
+                    letterSpacing: '0.1em'
+                  }}
+                >
+                  ¿Olvidaste tu código de seguridad?
+                </MuiLink>
                 <MuiLink
                   onClick={() => navigate('/museo-de-arte-contemporaneo')}
                   className="cursor-pointer text-xs tracking-wider"
@@ -182,6 +204,25 @@ const LoginView = () => {
             </>
           )}
         </Box>
+
+        {/* Modal Recuperar Código */}
+        <Dialog open={recuperarOpen} onClose={() => setRecuperarOpen(false)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 0 } }}>
+          <DialogTitle className="font-light tracking-wide flex justify-between items-center border-b">
+            Recuperar Código de Seguridad
+            <IconButton onClick={() => setRecuperarOpen(false)} size="small">
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent className="mt-4">
+            <RecuperarCodigoForm 
+              onSuccess={(mensaje) => {
+                setMensajeExito(mensaje);
+                setRecuperarOpen(false);
+              }}
+              onCancel={() => setRecuperarOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </Container>
     </Box>
   );

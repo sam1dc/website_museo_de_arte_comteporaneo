@@ -33,10 +33,11 @@ export const compraService = {
       admin_emite_id: adminId,
       envio: {
         destinatario: nombreCompleto || 'Comprador',
-        direccion: solicitud.direccion_envio || solicitud.comprador?.direccion || 'Por definir',
-        ciudad: solicitud.ciudad || solicitud.comprador?.ciudad || 'Por definir',
-        pais: solicitud.pais || solicitud.comprador?.pais || 'Por definir',
-        codigo_postal: solicitud.codigo_postal || '',
+        direccion: solicitud.comprador?.direccion || 'Por definir',
+        ciudad: solicitud.comprador?.ciudad || 'Por definir',
+        pais: solicitud.comprador?.pais || 'Por definir',
+        codigo_postal: solicitud.comprador?.codigo_postal || '',
+        telefono: solicitud.comprador?.telefono || '',
       }
     };
 

@@ -69,19 +69,6 @@ const LoginForm = ({ onSubmit }) => {
       >
         Acceder
       </Button>
-
-      <Link
-        href="#"
-        className="text-center text-xs tracking-wider"
-        underline="hover"
-        sx={{ 
-          color: '#666',
-          '&:hover': { color: '#000' },
-          letterSpacing: '0.1em'
-        }}
-      >
-        Recuperar contraseña
-      </Link>
     </Box>
   );
 };

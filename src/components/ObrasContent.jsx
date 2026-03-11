@@ -12,6 +12,7 @@ const ObrasContent = () => {
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
   const [fotoModal, setFotoModal] = useState({ open: false, url: '', nombre: '' });
   const [detalleModal, setDetalleModal] = useState({ open: false, obra: null, loading: false });
   const cargadoRef = useRef(false);
@@ -87,14 +88,70 @@ const ObrasContent = () => {
     cargarDatos();
   }, []);
 
-  const handleOpen = (obra = null) => {
+  const handleOpen = async (obra = null) => {
     if (obra) {
+      // Abrir modal inmediatamente con datos básicos
       setCurrentObra({
         ...obra,
         fecha_creacion: obra.fecha_creacion ? obra.fecha_creacion.split('T')[0] : '',
-        tipo: obra.tipo || ''
+        tipo: obra.tipo || '',
+        tecnica: '',
+        soporte: '',
+        alto_cm: '',
+        ancho_cm: '',
+        material: '',
+        peso_kg: '',
+        largo_cm: '',
+        profundidad_cm: '',
+        camara: '',
+        lente: '',
+        tipo_impresion: '',
+        edicion: '',
+        metal_principal: '',
+        pureza: '',
+        piedras: '',
+        peso_gramos: '',
+        tipo_pasta: '',
+        esmalte: '',
+        temperatura_coccion_c: ''
       });
       setEditMode(true);
+      setOpen(true);
+      setCargandoDetalle(true);
+      
+      try {
+        // Cargar detalle completo con subtipos en segundo plano
+        const obraCompleta = await obrasAdminService.obtenerDetalle(obra.obra_id);
+        
+        setCurrentObra({
+          ...obraCompleta,
+          fecha_creacion: obraCompleta.fecha_creacion ? obraCompleta.fecha_creacion.split('T')[0] : '',
+          tipo: obraCompleta.tipo || '',
+          tecnica: obraCompleta.pintura?.tecnica || '',
+          soporte: obraCompleta.pintura?.soporte || '',
+          alto_cm: obraCompleta.pintura?.alto_cm || obraCompleta.escultura?.alto_cm || obraCompleta.fotografia?.alto_cm || obraCompleta.ceramica?.alto_cm || '',
+          ancho_cm: obraCompleta.pintura?.ancho_cm || obraCompleta.escultura?.ancho_cm || obraCompleta.fotografia?.ancho_cm || obraCompleta.ceramica?.ancho_cm || '',
+          material: obraCompleta.escultura?.material || '',
+          peso_kg: obraCompleta.escultura?.peso_kg || '',
+          largo_cm: obraCompleta.escultura?.largo_cm || obraCompleta.ceramica?.largo_cm || '',
+          profundidad_cm: obraCompleta.escultura?.profundidad_cm || '',
+          camara: obraCompleta.fotografia?.camara || '',
+          lente: obraCompleta.fotografia?.lente || '',
+          tipo_impresion: obraCompleta.fotografia?.tipo_impresion || '',
+          edicion: obraCompleta.fotografia?.edicion || '',
+          metal_principal: obraCompleta.orfebreria?.metal_principal || '',
+          pureza: obraCompleta.orfebreria?.pureza || '',
+          piedras: obraCompleta.orfebreria?.piedras || '',
+          peso_gramos: obraCompleta.orfebreria?.peso_gramos || '',
+          tipo_pasta: obraCompleta.ceramica?.tipo_pasta || '',
+          esmalte: obraCompleta.ceramica?.esmalte || '',
+          temperatura_coccion_c: obraCompleta.ceramica?.temperatura_coccion_c || ''
+        });
+      } catch (err) {
+        console.error('Error al cargar detalle:', err);
+      } finally {
+        setCargandoDetalle(false);
+      }
     } else {
       setCurrentObra({
         nombre: '',
@@ -127,8 +184,8 @@ const ObrasContent = () => {
         temperatura_coccion_c: ''
       });
       setEditMode(false);
+      setOpen(true);
     }
-    setOpen(true);
   };
 
   const handleClose = () => {
@@ -419,6 +476,7 @@ const ObrasContent = () => {
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle className="font-light tracking-wide">
           {editMode ? 'Editar Obra' : 'Nueva Obra'}
+          {cargandoDetalle && <CircularProgress size={20} sx={{ ml: 2 }} />}
         </DialogTitle>
         <DialogContent>
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -505,7 +563,7 @@ const ObrasContent = () => {
             </FormControl>
 
             {/* Campos específicos por tipo - justo después del tipo */}
-            {currentObra.tipo === 'pintura' && (
+            {!cargandoDetalle && currentObra.tipo === 'pintura' && (
               <>
                 <TextField
                   label="Técnica"
@@ -540,7 +598,7 @@ const ObrasContent = () => {
               </>
             )}
 
-            {currentObra.tipo === 'escultura' && (
+            {!cargandoDetalle && currentObra.tipo === 'escultura' && (
               <>
                 <TextField
                   label="Material"
@@ -592,7 +650,7 @@ const ObrasContent = () => {
               </>
             )}
 
-            {currentObra.tipo === 'fotografia' && (
+            {!cargandoDetalle && currentObra.tipo === 'fotografia' && (
               <>
                 <TextField
                   label="Cámara"
@@ -641,7 +699,7 @@ const ObrasContent = () => {
               </>
             )}
 
-            {currentObra.tipo === 'orfebreria' && (
+            {!cargandoDetalle && currentObra.tipo === 'orfebreria' && (
               <>
                 <TextField
                   label="Metal Principal"
@@ -676,7 +734,7 @@ const ObrasContent = () => {
               </>
             )}
 
-            {currentObra.tipo === 'ceramica' && (
+            {!cargandoDetalle && currentObra.tipo === 'ceramica' && (
               <>
                 <TextField
                   label="Tipo de Pasta"

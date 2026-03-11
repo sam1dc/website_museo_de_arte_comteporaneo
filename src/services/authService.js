@@ -16,15 +16,17 @@ export const authService = {
     }),
   }),
 
-  recuperarContrasena: (email) => apiCall('/recuperar-contrasena', {
+  recuperarCodigoSeguridad: (email, respuestas) => apiCall('/recuperar-codigo-seguridad', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ 
+      email,
+      respuesta_1: respuestas[0],
+      respuesta_2: respuestas[1],
+      respuesta_3: respuestas[2]
+    }),
   }),
 
-  recuperarCodigoSeguridad: (email) => apiCall('/recuperar-codigo-seguridad', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-  }),
+  obtenerPreguntasSeguridad: (email) => apiCall(`/compradores/preguntas/${encodeURIComponent(email)}`),
 
   // Admin
   loginAdmin: (email, password) => apiCall('/admin/login', {

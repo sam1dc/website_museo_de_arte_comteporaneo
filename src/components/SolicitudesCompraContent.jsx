@@ -164,7 +164,7 @@ const SolicitudesCompraContent = () => {
                   </TableCell>
                   <TableCell>
                     <Typography variant="caption" className="text-gray-600">
-                      {solicitud.direccion_envio || 'N/A'}
+                      {solicitud.comprador?.direccion || 'N/A'}, {solicitud.comprador?.ciudad || ''}, {solicitud.comprador?.pais || ''}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
@@ -265,7 +265,9 @@ const SolicitudesCompraContent = () => {
               <Box>
                 <Typography variant="caption" className="text-gray-600 uppercase">Dirección de Envío</Typography>
                 <Typography variant="body2">
-                  {solicitudSeleccionada.direccion_envio || 'N/A'}
+                  {solicitudSeleccionada.comprador?.direccion || 'N/A'}<br />
+                  {solicitudSeleccionada.comprador?.ciudad || ''}, {solicitudSeleccionada.comprador?.codigo_postal || ''}<br />
+                  {solicitudSeleccionada.comprador?.pais || ''}
                 </Typography>
               </Box>
             </Box>

@@ -1,11 +1,30 @@
 import { useState } from 'react';
-import { Box, TextField, Button, Alert, Typography, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Stepper, Step, StepLabel } from '@mui/material';
+import { Box, TextField, Button, Alert, Typography, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Stepper, Step, StepLabel, MenuItem, Select, InputLabel } from '@mui/material';
 import useForm from '../hooks/useForm';
 
 const RegistroForm = ({ onSubmit }) => {
   const [error, setError] = useState('');
   const [paso, setPaso] = useState(0);
   const [membresia, setMembresia] = useState('ninguna');
+  const [preguntas, setPreguntas] = useState([
+    { pregunta: '', respuesta: '' },
+    { pregunta: '', respuesta: '' },
+    { pregunta: '', respuesta: '' }
+  ]);
+
+  const preguntasDisponibles = [
+    '¿Cuál es el nombre de tu primera mascota?',
+    '¿En qué ciudad naciste?',
+    '¿Cuál es tu comida favorita?',
+    '¿Cuál es el nombre de tu mejor amigo de la infancia?',
+    '¿Cuál es tu película favorita?',
+    '¿Cuál es el nombre de tu escuela primaria?',
+    '¿Cuál es tu color favorito?',
+    '¿En qué calle vivías cuando eras niño?',
+    '¿Cuál es el segundo nombre de tu madre?',
+    '¿Cuál es tu libro favorito?'
+  ];
+
   const { values, handleChange } = useForm({
     nombre: '',
     apellido: '',
@@ -23,7 +42,7 @@ const RegistroForm = ({ onSubmit }) => {
     tarjeta_exp_anio: ''
   });
 
-  const pasos = ['Información Personal', 'Membresía', 'Datos de Pago'];
+  const pasos = ['Información Personal', 'Membresía', 'Preguntas de Seguridad', 'Datos de Pago'];
 
   const handleSiguiente = () => {
     setError('');
@@ -48,13 +67,27 @@ const RegistroForm = ({ onSubmit }) => {
     // Validar paso 2 (si eligió membresía, ir a paso 3, sino enviar)
     if (paso === 1) {
       if (membresia === 'ninguna') {
+        // Sin membresía, ir a preguntas de seguridad
+        setPaso(2);
+        return;
+      }
+    }
+
+    // Validar paso 3 (preguntas de seguridad)
+    if (paso === 2) {
+      if (preguntas.some(p => !p.pregunta.trim() || !p.respuesta.trim())) {
+        setError('Por favor completa todas las preguntas y respuestas');
+        return;
+      }
+      // Si tiene membresía, ir a pago; sino, enviar
+      if (membresia === 'ninguna') {
         handleSubmitFinal();
         return;
       }
     }
 
-    // Validar paso 3
-    if (paso === 2) {
+    // Validar paso 4 (datos de pago)
+    if (paso === 3) {
       if (!values.tarjeta_titular || !values.tarjeta_ultimos4 || !values.tarjeta_exp_mes || !values.tarjeta_exp_anio) {
         setError('Por favor completa los datos de la tarjeta');
         return;
@@ -85,7 +118,9 @@ const RegistroForm = ({ onSubmit }) => {
       ciudad: values.ciudad,
       pais: values.pais,
       password: values.password,
-      membresia: membresia
+      password_confirmation: values.password,
+      membresia: membresia,
+      preguntas_seguridad: preguntas
     };
 
     if (membresia !== 'ninguna') {
@@ -118,8 +153,8 @@ const RegistroForm = ({ onSubmit }) => {
       {/* Stepper */}
       <Stepper activeStep={paso} alternativeLabel sx={{ mb: 4 }}>
         {pasos.map((label, index) => {
-          // Ocultar paso 3 si no hay membresía
-          if (index === 2 && membresia === 'ninguna') return null;
+          // Ocultar paso 4 (Datos de Pago) si no hay membresía
+          if (index === 3 && membresia === 'ninguna') return null;
           return (
             <Step key={label}>
               <StepLabel sx={{
@@ -314,8 +349,63 @@ const RegistroForm = ({ onSubmit }) => {
         </Box>
       )}
 
-      {/* Paso 3: Datos de Pago */}
-      {paso === 2 && membresia !== 'ninguna' && (
+      {/* Paso 3: Preguntas de Seguridad */}
+      {paso === 2 && (
+        <Box className="flex flex-col gap-6">
+          <Typography variant="h6" className="font-light tracking-wide mb-2" sx={{ fontSize: '1rem', letterSpacing: '0.1em' }}>
+            Preguntas de Seguridad
+          </Typography>
+          <Typography variant="body2" className="text-gray-600 mb-2">
+            Estas preguntas te permitirán recuperar tu código de seguridad en caso de extravío
+          </Typography>
+          
+          {preguntas.map((item, index) => (
+            <Box key={index} className="border p-4">
+              <Typography variant="caption" className="text-gray-600 uppercase tracking-wider text-xs mb-3 block">
+                Pregunta {index + 1}
+              </Typography>
+              <FormControl fullWidth variant="standard" sx={{ mb: 3 }}>
+                <InputLabel sx={{ color: '#666', fontSize: '0.875rem', letterSpacing: '0.05em' }}>
+                  Selecciona una pregunta
+                </InputLabel>
+                <Select
+                  value={item.pregunta}
+                  onChange={(e) => {
+                    const nuevas = [...preguntas];
+                    nuevas[index].pregunta = e.target.value;
+                    setPreguntas(nuevas);
+                  }}
+                  sx={{
+                    '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
+                    '& .MuiInput-underline:hover:before': { borderBottomColor: '#000' },
+                    '& .MuiInput-underline:after': { borderBottomColor: '#000' },
+                  }}
+                >
+                  {preguntasDisponibles.map((pregunta, i) => (
+                    <MenuItem key={i} value={pregunta}>{pregunta}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                label="Respuesta"
+                value={item.respuesta}
+                onChange={(e) => {
+                  const nuevas = [...preguntas];
+                  nuevas[index].respuesta = e.target.value;
+                  setPreguntas(nuevas);
+                }}
+                required
+                fullWidth
+                variant="standard"
+                sx={inputStyles}
+              />
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Paso 4: Datos de Pago */}
+      {paso === 3 && membresia !== 'ninguna' && (
         <Box className="flex flex-col gap-6">
           <Typography variant="h6" className="font-light tracking-wide mb-2" sx={{ fontSize: '1rem', letterSpacing: '0.1em' }}>
             Datos de Pago
@@ -428,8 +518,8 @@ const RegistroForm = ({ onSubmit }) => {
             textTransform: 'uppercase'
           }}
         >
-          {paso === 2 ? 'Finalizar Registro' : 
-           paso === 1 && membresia === 'ninguna' ? 'Registrarse' : 
+          {paso === 3 ? 'Finalizar Registro' : 
+           paso === 2 && membresia === 'ninguna' ? 'Registrarse' : 
            'Siguiente'}
         </Button>
       </Box>

@@ -51,14 +51,44 @@ const CheckoutView = () => {
         }
 
         // Cargar tarjetas guardadas del comprador
+        console.log('Comprador:', comprador);
+        
         if (comprador?.data?.tarjetas && comprador.data.tarjetas.length > 0) {
+          console.log('Tarjetas desde localStorage (data):', comprador.data.tarjetas);
           setTarjetasGuardadas(comprador.data.tarjetas);
           setTarjetaSeleccionada(comprador.data.tarjetas[0].tarjeta_id);
         } else if (comprador?.tarjetas && comprador.tarjetas.length > 0) {
+          console.log('Tarjetas desde localStorage (directo):', comprador.tarjetas);
           setTarjetasGuardadas(comprador.tarjetas);
           setTarjetaSeleccionada(comprador.tarjetas[0].tarjeta_id);
         } else {
-          setUsarTarjetaGuardada(false);
+          console.log('No hay tarjetas en localStorage, cargando desde backend...');
+          // Si no hay tarjetas en localStorage, intentar cargar desde el backend
+          try {
+            const compradorId = comprador?.data?.comprador_id || comprador?.comprador_id;
+            console.log('Comprador ID:', compradorId);
+            
+            if (compradorId) {
+              const { compradoresAdminService } = await import('../services');
+              const compradorData = await compradoresAdminService.obtenerDetalle(compradorId);
+              console.log('Datos del comprador desde backend:', compradorData);
+              
+              if (compradorData.tarjetas && compradorData.tarjetas.length > 0) {
+                console.log('Tarjetas encontradas:', compradorData.tarjetas);
+                setTarjetasGuardadas(compradorData.tarjetas);
+                setTarjetaSeleccionada(compradorData.tarjetas[0].tarjeta_id);
+              } else {
+                console.log('No hay tarjetas en el backend');
+                setUsarTarjetaGuardada(false);
+              }
+            } else {
+              console.log('No hay comprador ID');
+              setUsarTarjetaGuardada(false);
+            }
+          } catch (err) {
+            console.error('Error al cargar tarjetas:', err);
+            setUsarTarjetaGuardada(false);
+          }
         }
       } catch (err) {
         setError('Obra no encontrada');
