@@ -9,6 +9,7 @@ const DashboardContent = () => {
   const [stats, setStats] = useState(null);
   const [reportes, setReportes] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [cargandoGraficas, setCargandoGraficas] = useState(false);
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
 
@@ -181,7 +182,7 @@ const DashboardContent = () => {
 
   const cargarDatos = async () => {
     try {
-      setCargando(true);
+      setCargandoGraficas(true);
       
       const dashboardData = await dashboardService.obtenerResumen();
       setStats({
@@ -204,16 +205,8 @@ const DashboardContent = () => {
       const comprasPorMes = procesarComprasPorMes(obrasVendidasRes.data || []);
 
       setReportes({
-        ventasPorMes: ventasPorMes.length > 0 ? ventasPorMes : [
-          { mes: 'Ene', ventas: 0, ingresos: 0 },
-          { mes: 'Feb', ventas: 0, ingresos: 0 },
-          { mes: 'Mar', ventas: 0, ingresos: 0 }
-        ],
-        comprasPorMes: comprasPorMes.length > 0 ? comprasPorMes : [
-          { mes: 'Ene', cantidad: 0 },
-          { mes: 'Feb', cantidad: 0 },
-          { mes: 'Mar', cantidad: 0 }
-        ],
+        ventasPorMes,
+        comprasPorMes,
         topArtistas: topArtistas.length > 0 ? topArtistas : [
           { nombre: 'Sin ventas', ventas: 0 }
         ]
@@ -227,7 +220,7 @@ const DashboardContent = () => {
         topArtistas: []
       });
     } finally {
-      setCargando(false);
+      setCargandoGraficas(false);
     }
   };
 
@@ -331,7 +324,13 @@ const DashboardContent = () => {
           </div>
         </Paper>
 
-        {reportes?.ventasPorMes && (
+        {cargandoGraficas ? (
+          <Paper className="p-8 border border-gray-200" elevation={0}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+              <CircularProgress />
+            </Box>
+          </Paper>
+        ) : reportes?.ventasPorMes && (
           <Paper className="p-8 border border-gray-200" elevation={0}>
             <Typography variant="h6" className="font-light tracking-wide mb-6">
               Ventas e Ingresos Mensuales
@@ -358,8 +357,23 @@ const DashboardContent = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {reportes?.comprasPorMes && (
-            <Paper className="p-8 border border-gray-200" elevation={0}>
+          {cargandoGraficas ? (
+            <>
+              <Paper className="p-8 border border-gray-200" elevation={0}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                  <CircularProgress />
+                </Box>
+              </Paper>
+              <Paper className="p-8 border border-gray-200" elevation={0}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                  <CircularProgress />
+                </Box>
+              </Paper>
+            </>
+          ) : (
+            <>
+              {reportes?.comprasPorMes && (
+                <Paper className="p-8 border border-gray-200" elevation={0}>
               <Typography variant="h6" className="font-light tracking-wide mb-6">
                 Obras Vendidas por Mes
               </Typography>
@@ -402,6 +416,8 @@ const DashboardContent = () => {
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
+          )}
+            </>
           )}
         </div>
       </div>
