@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Chip, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Chip, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Tooltip } from '@mui/material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Security as SecurityIcon } from '@mui/icons-material';
 import { compradoresAdminService } from '../services';
 
 const CompradoresContent = () => {
   const [compradores, setCompradores] = useState([]);
   const [cargando, setCargando] = useState(true);
+  const [cargandoPreguntas, setCargandoPreguntas] = useState(false);
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
+  const [preguntasOpen, setPreguntasOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const cargadoRef = useRef(false);
@@ -23,6 +25,24 @@ const CompradoresContent = () => {
     password: '',
     es_miembro: false
   });
+  const [preguntas, setPreguntas] = useState([
+    { pregunta: '', respuesta: '' },
+    { pregunta: '', respuesta: '' },
+    { pregunta: '', respuesta: '' }
+  ]);
+
+  const preguntasDisponibles = [
+    '¿Cuál es el nombre de tu primera mascota?',
+    '¿En qué ciudad naciste?',
+    '¿Cuál es tu comida favorita?',
+    '¿Cuál es el nombre de tu mejor amigo de la infancia?',
+    '¿Cuál es tu película favorita?',
+    '¿Cuál es el nombre de tu escuela primaria?',
+    '¿Cuál es tu color favorito?',
+    '¿En qué calle vivías cuando eras niño?',
+    '¿Cuál es el segundo nombre de tu madre?',
+    '¿Cuál es tu libro favorito?'
+  ];
 
   useEffect(() => {
     if (cargadoRef.current) return;
@@ -101,9 +121,54 @@ const CompradoresContent = () => {
         await compradoresAdminService.eliminar(id);
         setCompradores(compradores.filter(c => c.comprador_id !== id));
       } catch (err) {
-        setError('Error al eliminar el comprador');
+        setError(err.message || 'Error al eliminar el comprador');
         console.error(err);
       }
+    }
+  };
+
+  const handleOpenPreguntas = async (comprador) => {
+    setCurrentComprador(comprador);
+    setPreguntasOpen(true);
+    setCargandoPreguntas(true);
+    
+    try {
+      const preguntasData = await compradoresAdminService.obtenerPreguntas(comprador.comprador_id);
+      if (preguntasData && preguntasData.length === 3) {
+        setPreguntas(preguntasData.map(p => ({ pregunta: p.pregunta, respuesta: '' })));
+      } else {
+        setPreguntas([
+          { pregunta: '', respuesta: '' },
+          { pregunta: '', respuesta: '' },
+          { pregunta: '', respuesta: '' }
+        ]);
+      }
+    } catch (err) {
+      setPreguntas([
+        { pregunta: '', respuesta: '' },
+        { pregunta: '', respuesta: '' },
+        { pregunta: '', respuesta: '' }
+      ]);
+    } finally {
+      setCargandoPreguntas(false);
+    }
+  };
+
+  const handleSavePreguntas = async () => {
+    if (preguntas.some(p => !p.pregunta || !p.respuesta)) {
+      setError('Por favor completa todas las preguntas y respuestas');
+      return;
+    }
+
+    try {
+      setEnviando(true);
+      setError(null);
+      await compradoresAdminService.actualizarPreguntas(currentComprador.comprador_id, preguntas);
+      setPreguntasOpen(false);
+    } catch (err) {
+      setError(err.message || 'Error al actualizar las preguntas');
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -208,12 +273,21 @@ const CompradoresContent = () => {
                 </TableCell>
                 <TableCell>{new Date(comprador.created_at).toLocaleDateString()}</TableCell>
                 <TableCell align="right">
-                  <IconButton size="small" onClick={() => handleOpen(comprador)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Editar">
+                    <IconButton size="small" onClick={() => handleOpen(comprador)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Preguntas de Seguridad">
+                    <IconButton size="small" onClick={() => handleOpenPreguntas(comprador)}>
+                      <SecurityIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Eliminar">
+                    <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}
@@ -371,6 +445,75 @@ const CompradoresContent = () => {
           <Button
             onClick={handleSave}
             disabled={enviando}
+            variant="contained"
+            sx={{
+              backgroundColor: '#000',
+              color: '#fff',
+              borderRadius: 0,
+              '&:hover': { backgroundColor: '#1a1a1a' }
+            }}
+          >
+            {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal Preguntas de Seguridad */}
+      <Dialog open={preguntasOpen} onClose={() => setPreguntasOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle className="font-light tracking-wide border-b">
+          Preguntas de Seguridad - {currentComprador.nombres} {currentComprador.apellidos}
+        </DialogTitle>
+        <DialogContent className="p-6">
+          {cargandoPreguntas ? (
+            <Box className="flex justify-center py-16">
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box className="flex flex-col gap-6 mt-4">
+              {preguntas.map((item, index) => (
+                <Box key={index} className="border p-4">
+                  <Typography variant="caption" className="text-gray-600 uppercase tracking-wider text-xs mb-3 block">
+                    Pregunta {index + 1}
+                  </Typography>
+                  <FormControl fullWidth variant="standard" sx={{ mb: 3 }}>
+                    <InputLabel>Selecciona una pregunta</InputLabel>
+                    <Select
+                      value={item.pregunta}
+                      onChange={(e) => {
+                        const nuevas = [...preguntas];
+                        nuevas[index].pregunta = e.target.value;
+                        setPreguntas(nuevas);
+                      }}
+                    >
+                      {preguntasDisponibles.map((pregunta, i) => (
+                        <MenuItem key={i} value={pregunta}>{pregunta}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <TextField
+                    label="Respuesta"
+                    value={item.respuesta}
+                    onChange={(e) => {
+                      const nuevas = [...preguntas];
+                      nuevas[index].respuesta = e.target.value;
+                      setPreguntas(nuevas);
+                    }}
+                    required
+                    fullWidth
+                    variant="standard"
+                  />
+                </Box>
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions className="p-6">
+          <Button onClick={() => setPreguntasOpen(false)} sx={{ color: '#666' }}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSavePreguntas}
+            disabled={enviando || cargandoPreguntas}
             variant="contained"
             sx={{
               backgroundColor: '#000',

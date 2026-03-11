@@ -152,6 +152,17 @@ export const compradoresAdminService = {
   eliminar: (id) => apiCall(`/admin/compradores/${id}`, {
     method: 'DELETE',
   }),
+  obtenerPreguntas: async (id) => {
+    const response = await apiCall(`/admin/compradores/${id}/preguntas`);
+    return response.data || response;
+  },
+  actualizarPreguntas: async (id, preguntas) => {
+    const response = await apiCall(`/admin/compradores/${id}/preguntas`, {
+      method: 'PUT',
+      body: JSON.stringify({ preguntas_seguridad: preguntas }),
+    });
+    return response.data || response;
+  },
 };
 
 // Facturas

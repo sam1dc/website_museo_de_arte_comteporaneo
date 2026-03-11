@@ -57,7 +57,7 @@ const CatalogoView = () => {
     const cumpleEstatus = filtroEstatus === 'todos' || obra.estatus?.toUpperCase() === filtroEstatus.toUpperCase();
     
     let cumplePrecio = true;
-    if (filtroPrecio !== 'todos' && obra.estatus === 'DISPONIBLE') {
+    if (filtroPrecio !== 'todos') {
       const precio = parseFloat(obra.precio_usd);
       switch(filtroPrecio) {
         case 'bajo': cumplePrecio = precio < 5000; break;
@@ -237,6 +237,18 @@ const CatalogoView = () => {
                   }}
                 >
                   {obra.artista?.nombre_completo}
+                </Typography>
+
+                <Typography 
+                  variant="body2" 
+                  className="text-gray-500 mb-3 font-light"
+                  sx={{ 
+                    fontSize: '0.7rem', 
+                    letterSpacing: '0.05em',
+                    minHeight: '1.2rem'
+                  }}
+                >
+                  {obra.tipo || 'N/A'}
                 </Typography>
 
                 <Box className="flex items-center justify-between mb-3">

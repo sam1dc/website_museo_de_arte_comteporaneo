@@ -14,12 +14,13 @@ export const apiCall = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, defaultOptions);
+    const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
+      throw new Error(data.message || `Error ${response.status}: ${response.statusText}`);
     }
     
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('API Error:', error);
     throw error;
