@@ -37,30 +37,27 @@ const Footer = () => {
               Enlaces
             </Typography>
             <Box className="flex flex-col gap-2">
-              <MuiLink
+              <Box
                 onClick={() => navigate('/museo-de-arte-contemporaneo')}
                 className="cursor-pointer font-light text-gray-400 hover:text-white transition-colors"
                 sx={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}
-                underline="none"
               >
                 Inicio
-              </MuiLink>
-              <MuiLink
+              </Box>
+              <Box
                 onClick={() => navigate('/museo-de-arte-contemporaneo/catalogo')}
                 className="cursor-pointer font-light text-gray-400 hover:text-white transition-colors"
                 sx={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}
-                underline="none"
               >
                 Catálogo
-              </MuiLink>
-              <MuiLink
+              </Box>
+              <Box
                 onClick={() => navigate('/login')}
                 className="cursor-pointer font-light text-gray-400 hover:text-white transition-colors"
                 sx={{ fontSize: '0.875rem', letterSpacing: '0.05em' }}
-                underline="none"
               >
                 Acceder
-              </MuiLink>
+              </Box>
             </Box>
           </Box>
 

@@ -9,6 +9,31 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
+// Estilos personalizados para Swiper
+const swiperStyles = `
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: #000 !important;
+  }
+  .swiper-button-next:after,
+  .swiper-button-prev:after {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .swiper-button-next:hover,
+  .swiper-button-prev:hover {
+    color: #666 !important;
+  }
+  .swiper-pagination-bullet {
+    background-color: #666;
+    opacity: 0.5;
+  }
+  .swiper-pagination-bullet-active {
+    background-color: #000;
+    opacity: 1;
+  }
+`;
+
 const HomeView = () => {
   const navigate = useNavigate();
   const [obrasDestacadas, setObrasDestacadas] = useState([]);
@@ -29,6 +54,7 @@ const HomeView = () => {
 
   return (
     <Box>
+      <style>{swiperStyles}</style>
       {/* Hero Section */}
       <Box 
         className="relative h-screen flex items-center justify-center"

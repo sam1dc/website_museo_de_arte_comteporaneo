@@ -34,6 +34,14 @@ const PublicLayout = () => {
             </Link>
 
             <Box className="flex items-center gap-6">
+              <Link to="/museo-de-arte-contemporaneo" className="no-underline">
+                <Typography 
+                  className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
+                  sx={{ letterSpacing: '0.1em', fontWeight: 300 }}
+                >
+                  Inicio
+                </Typography>
+              </Link>
               <Link to="/museo-de-arte-contemporaneo/catalogo" className="no-underline">
                 <Typography 
                   className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
