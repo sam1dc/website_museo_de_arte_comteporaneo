@@ -30,13 +30,37 @@ const PublicLayout = () => {
   };
 
   return (
-    <Box className="min-h-screen bg-white flex flex-col">
+    <Box 
+      className="min-h-screen flex flex-col"
+      sx={{
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8f8f8 25%, #ffffff 50%, #f5f5f5 75%, #ffffff 100%)',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle at 20% 50%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 40% 20%, rgba(0, 0, 0, 0.01) 0%, transparent 50%)
+          `,
+          pointerEvents: 'none',
+          zIndex: 0
+        }
+      }}
+    >
       <AppBar 
         position="sticky" 
         elevation={0}
         sx={{ 
-          backgroundColor: '#fff',
-          borderBottom: '1px solid #e5e5e5'
+          backgroundColor: 'rgba(250, 250, 250, 0.98)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+          zIndex: 10
         }}
       >
         <Container maxWidth="xl">
@@ -147,7 +171,7 @@ const PublicLayout = () => {
         </Container>
       </AppBar>
 
-      <Box component="main" className="flex-grow">
+      <Box component="main" className="flex-grow" sx={{ position: 'relative', zIndex: 1 }}>
         <Outlet />
       </Box>
 
