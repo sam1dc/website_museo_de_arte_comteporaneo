@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Chip, Button, CircularProgress } from '@mui/material';
+import { Public, CalendarToday, Palette } from '@mui/icons-material';
 import { useState, useEffect, useRef } from 'react';
 import { artistaService } from '../services';
 
@@ -32,7 +33,7 @@ const ArtistaPerfilView = () => {
   }, [id]);
 
   return (
-    <Container maxWidth="xl" className="py-16">
+    <Container maxWidth="lg" className="py-8 md:py-16 px-4 md:px-6">
       {cargando ? (
         <Box className="flex justify-center py-16">
           <CircularProgress />
@@ -64,82 +65,91 @@ const ArtistaPerfilView = () => {
       </Button>
 
       <Box className="mb-12">
-        <Typography 
-          variant="h3" 
-          className="font-extralight tracking-widest text-black mb-4 uppercase"
-          sx={{ letterSpacing: '0.2em' }}
-        >
-          {artista.nombre_completo}
-        </Typography>
-        <Box className="w-24 h-px bg-black mb-6" />
-        
-        <Box className="flex gap-2 mb-6">
-          {artista.generos?.map(genero => (
-            <Chip 
-              key={genero.genero_id}
-              label={genero.nombre} 
-              sx={{
-                borderRadius: 0,
-                fontSize: '0.7rem',
-                letterSpacing: '0.05em',
-                fontWeight: 300,
-                backgroundColor: '#f5f5f5',
-                color: '#666'
-              }}
-            />
-          ))}
-        </Box>
-
-        <Grid container spacing={4} className="mb-8">
-          <Grid item xs={12} md={8}>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+          {artista.foto_url && (
+            <div className="md:col-span-3">
+              <Box className="w-full aspect-square overflow-hidden border border-gray-200">
+                <img
+                  src={artista.foto_url}
+                  alt={artista.nombre_completo}
+                  className="w-full h-full object-cover"
+                />
+              </Box>
+            </div>
+          )}
+          <div className="md:col-span-9">
             <Typography 
-              className="font-light text-gray-800 leading-relaxed mb-6"
-              sx={{ fontSize: '1rem', letterSpacing: '0.02em' }}
+              variant="h3" 
+              className="font-extralight tracking-widest text-black uppercase mb-4"
+              sx={{ letterSpacing: '0.2em', fontSize: { xs: '1.75rem', md: '2.5rem' } }}
             >
-              {artista.biografia}
+              {artista.nombre_completo}
             </Typography>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box className="bg-gray-50 p-6">
-              <Box className="mb-4">
-                <Typography 
-                  className="text-gray-600 font-light mb-1 uppercase"
-                  sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
-                >
-                  Nacionalidad
+            
+            <div className="flex gap-3 flex-wrap items-center">
+              {artista.generos?.map(genero => (
+                <Chip 
+                  key={genero.genero_id}
+                  icon={<Palette sx={{ fontSize: '0.9rem', color: '#666 !important' }} />}
+                  label={genero.nombre} 
+                  sx={{
+                    borderRadius: 0,
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.05em',
+                    fontWeight: 300,
+                    backgroundColor: '#f5f5f5',
+                    color: '#666'
+                  }}
+                />
+              ))}
+              <div className="flex items-center gap-2 ml-2">
+                <Public sx={{ fontSize: '1rem', color: '#666' }} />
+                <Typography className="font-light text-gray-700" sx={{ fontSize: '0.9rem' }}>
+                  {artista.nacionalidad}
                 </Typography>
-                <Typography className="font-light">{artista.nacionalidad}</Typography>
-              </Box>
-              <Box>
-                <Typography 
-                  className="text-gray-600 font-light mb-1 uppercase"
-                  sx={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}
-                >
-                  Nacimiento
+              </div>
+              <div className="flex items-center gap-2">
+                <CalendarToday sx={{ fontSize: '1rem', color: '#666' }} />
+                <Typography className="font-light text-gray-700" sx={{ fontSize: '0.9rem' }}>
+                  {artista.fecha_nacimiento ? artista.fecha_nacimiento.split('T')[0].split('-').reverse().join('/') : 'N/A'}
                 </Typography>
-                <Typography className="font-light">
-                  {new Date(artista.fecha_nacimiento).getFullYear()}
-                </Typography>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
+              </div>
+            </div>
+
+          <div className='mt-1.5'>
+              <Typography 
+                className="text-gray-600 font-light uppercase"
+                sx={{ fontSize: '0.75rem', letterSpacing: '0.1em', my: 2 }}
+              >
+                Biografía
+              </Typography>
+              <Typography 
+                className="font-light text-gray-800 leading-relaxed"
+                sx={{ fontSize: '1rem', letterSpacing: '0.02em' }}
+              >
+                {artista.biografia}
+              </Typography>
+          </div>
+          </div>
+        </div>
+
+
       </Box>
 
-      <Box className="mb-8">
+      <Box className="mb-10">
         <Typography 
-          variant="h5" 
-          className="font-light tracking-widest text-black mb-6 uppercase"
-          sx={{ letterSpacing: '0.15em' }}
+          variant="h4" 
+          className="font-light tracking-widest text-black mb-2 uppercase"
+          sx={{ letterSpacing: '0.2em', fontSize: { xs: '1.5rem', md: '2rem' } }}
         >
           Obras
         </Typography>
-        <Box className="w-16 h-px bg-black mb-8" />
+        <Box className="w-20 h-0.5 bg-black mb-10" />
       </Box>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={{ xs: 3, md: 4 }}>
         {artista.obras?.map(obra => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={obra.obra_id}>
+          <Grid item xs={12} sm={6} md={4} key={obra.obra_id}>
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg"
               onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
@@ -150,14 +160,15 @@ const ArtistaPerfilView = () => {
                 '&:hover': { borderColor: '#000' }
               }}
             >
-              <CardMedia
-                component="img"
-                height="300"
-                image={obra.foto_url}
-                alt={obra.nombre}
-                sx={{ aspectRatio: '3/4', objectFit: 'cover' }}
-              />
-              <CardContent className="p-6">
+              <Box sx={{ height: 300, overflow: 'hidden' }}>
+                <CardMedia
+                  component="img"
+                  image={obra.foto_url}
+                  alt={obra.nombre}
+                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </Box>
+              <CardContent className="p-4 md:p-6">
                 <Typography 
                   variant="h6" 
                   className="font-light tracking-wide mb-2 uppercase"

@@ -186,109 +186,44 @@ const CatalogoView = () => {
       <Grid container spacing={4}>
         {obrasFiltradas.map(obra => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={obra.obra_id}>
-            <Card 
-              className="cursor-pointer transition-all hover:shadow-lg flex flex-col"
+            <div 
+              className="cursor-pointer transition-all hover:shadow-lg border border-gray-200 hover:border-black flex flex-col bg-white min-w-[250px] max-w-[350px] mx-auto"
               onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
-              sx={{ 
-                borderRadius: 0,
-                boxShadow: 'none',
-                border: '1px solid #e5e5e5',
-                '&:hover': { borderColor: '#000' },
-                height: '100%',
-                minHeight: '600px'
-              }}
             >
-              <CardMedia
-                component="img"
-                image={obra.foto_url}
-                alt={obra.nombre}
-                sx={{ 
-                  width: '100%',
-                  minWidth: '100%',
-                  height: '350px',
-                  objectFit: 'cover',
-                  flexShrink: 0
-                }}
-              />
-              <CardContent className="p-6 flex-grow flex flex-col">
-                <Typography 
-                  variant="h6" 
-                  className="font-light tracking-wide mb-2 uppercase"
-                  sx={{ 
-                    fontSize: '0.875rem', 
-                    letterSpacing: '0.1em',
-                    minHeight: '2.5rem',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}
-                >
+              <div className="w-full h-64 overflow-hidden bg-gray-100">
+                <img
+                  src={obra.foto_url}
+                  alt={obra.nombre}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-4 flex flex-col">
+                <h3 className="font-light tracking-wide mb-2 uppercase text-xs h-10 overflow-hidden line-clamp-2">
                   {obra.nombre}
-                </Typography>
+                </h3>
                 
-                <Typography 
-                  variant="body2" 
-                  className="text-gray-600 mb-3 font-light"
-                  sx={{ 
-                    fontSize: '0.75rem', 
-                    letterSpacing: '0.05em',
-                    minHeight: '1.5rem'
-                  }}
-                >
+                <p className="text-gray-600 mb-2 font-light text-xs tracking-wider">
                   {obra.artista?.nombre_completo}
-                </Typography>
+                </p>
 
-                <Typography 
-                  variant="body2" 
-                  className="text-gray-500 mb-3 font-light"
-                  sx={{ 
-                    fontSize: '0.7rem', 
-                    letterSpacing: '0.05em',
-                    minHeight: '1.2rem'
-                  }}
-                >
+                <p className="text-gray-500 mb-3 font-light text-xs tracking-wider">
                   {obra.tipo || 'N/A'}
-                </Typography>
+                </p>
 
-                <Box className="flex items-center justify-between mb-3">
-                  <Chip 
-                    label={obra.genero?.nombre} 
-                    size="small"
-                    sx={{
-                      borderRadius: 0,
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                      fontWeight: 300,
-                      backgroundColor: '#f5f5f5',
-                      color: '#666',
-                      height: '24px'
-                    }}
-                  />
-                  <Chip 
-                    label={obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'} 
-                    size="small"
-                    sx={{
-                      borderRadius: 0,
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                      fontWeight: 300,
-                      backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999',
-                      color: '#fff',
-                      height: '24px'
-                    }}
-                  />
-                </Box>
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs tracking-wider font-light">
+                    {obra.genero?.nombre}
+                  </span>
+                  <span className={`px-2 py-1 text-white text-xs tracking-wider font-light ${obra.estatus === 'DISPONIBLE' ? 'bg-black' : 'bg-gray-500'}`}>
+                    {obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'}
+                  </span>
+                </div>
 
-                <Typography 
-                  variant="h6" 
-                  className="font-light mt-auto"
-                  sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
-                >
+                <p className="font-light text-base tracking-wider">
                   ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
-                </Typography>
-              </CardContent>
-            </Card>
+                </p>
+              </div>
+            </div>
           </Grid>
         ))}
       </Grid>
