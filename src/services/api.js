@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const API_BASE_URL = 'https://mottled-leonora-deprecatively.ngrok-free.dev/api';
+export const API_BASE_URL = 'https://bd-museo-de-arte-comteporaneo.onrender.com/api';
 
 export const apiCall = async (endpoint, options = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
