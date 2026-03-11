@@ -185,7 +185,7 @@ const CheckoutView = () => {
   };
 
   return (
-    <Container maxWidth="lg" className="py-16">
+    <Container maxWidth="lg" className="py-8 md:py-16 px-4 md:px-6">
       {error && (
         <Alert severity="error" className="mb-6" onClose={() => setError('')}>
           {error}
@@ -210,14 +210,14 @@ const CheckoutView = () => {
       <Typography 
         variant="h3" 
         className="font-extralight tracking-widest text-black mb-4 uppercase"
-        sx={{ letterSpacing: '0.2em' }}
+        sx={{ letterSpacing: '0.2em', fontSize: { xs: '1.75rem', md: '2.5rem' } }}
       >
         Checkout
       </Typography>
       <Box className="w-24 h-px bg-black mb-12" />
 
-      <Grid container spacing={6}>
-        <Grid item xs={12} md={7}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div>
           <Box className="mb-8">
             <Typography 
               variant="h6" 
@@ -403,9 +403,9 @@ const CheckoutView = () => {
               />
             </Box>
           </Box>
-        </Grid>
+        </div>
 
-        <Grid item xs={12} md={5}>
+        <div>
           <Paper 
             elevation={0}
             sx={{ 
@@ -415,12 +415,13 @@ const CheckoutView = () => {
             }}
           >
             <Typography 
-              variant="h6" 
-              className="font-light tracking-wide mb-6 uppercase"
-              sx={{ letterSpacing: '0.1em', fontSize: '1rem' }}
+              variant="h5" 
+              className="font-extralight tracking-widest mb-6 uppercase"
+              sx={{ letterSpacing: '0.15em', fontSize: '1.25rem' }}
             >
               Resumen de Compra
             </Typography>
+            <Box className="w-16 h-px bg-black mb-6" />
 
             <Box className="mb-6">
               <Box
@@ -429,22 +430,29 @@ const CheckoutView = () => {
                 alt={obra.nombre}
                 sx={{
                   width: '100%',
-                  aspectRatio: '3/4',
+                  height: '250px',
                   objectFit: 'cover',
-                  mb: 3
+                  mb: 3,
+                  border: '1px solid #e5e5e5'
                 }}
               />
               <Typography 
-                className="font-light tracking-wide mb-1 uppercase"
+                className="font-light tracking-wide mb-2 uppercase"
                 sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
               >
                 {obra.nombre}
               </Typography>
               <Typography 
-                className="text-gray-600 font-light"
+                className="text-gray-600 font-light mb-1"
                 sx={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}
               >
                 {artista?.nombre_completo}
+              </Typography>
+              <Typography 
+                className="text-gray-500 font-light capitalize"
+                sx={{ fontSize: '0.7rem', letterSpacing: '0.05em' }}
+              >
+                {obra.tipo}
               </Typography>
             </Box>
 
@@ -508,8 +516,8 @@ const CheckoutView = () => {
               La factura será generada por un administrador del museo una vez confirmada la compra.
             </Typography>
           </Paper>
-        </Grid>
-      </Grid>
+        </div>
+      </div>
     </Container>
   );
 };
