@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Avatar, Tooltip } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
 import { obrasAdminService, artistasAdminService, generosAdminService } from '../services';
 
 const ObrasContent = () => {
@@ -13,6 +13,7 @@ const ObrasContent = () => {
   const [editMode, setEditMode] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [fotoModal, setFotoModal] = useState({ open: false, url: '', nombre: '' });
+  const [detalleModal, setDetalleModal] = useState({ open: false, obra: null, loading: false });
   const cargadoRef = useRef(false);
   const [currentObra, setCurrentObra] = useState({
     nombre: '',
@@ -23,7 +24,31 @@ const ObrasContent = () => {
     estatus: 'DISPONIBLE',
     descripcion: '',
     foto_url: '',
-    tipo: ''
+    tipo: '',
+    // Pintura
+    tecnica: '',
+    soporte: '',
+    alto_cm: '',
+    ancho_cm: '',
+    // Escultura
+    material: '',
+    peso_kg: '',
+    largo_cm: '',
+    profundidad_cm: '',
+    // Fotografía
+    camara: '',
+    lente: '',
+    tipo_impresion: '',
+    edicion: '',
+    // Orfebrería
+    metal_principal: '',
+    pureza: '',
+    piedras: '',
+    peso_gramos: '',
+    // Cerámica
+    tipo_pasta: '',
+    esmalte: '',
+    temperatura_coccion_c: ''
   });
 
   const estatusOptions = ['DISPONIBLE', 'RESERVADA', 'VENDIDA'];
@@ -66,7 +91,8 @@ const ObrasContent = () => {
     if (obra) {
       setCurrentObra({
         ...obra,
-        fecha_creacion: obra.fecha_creacion ? obra.fecha_creacion.split('T')[0] : ''
+        fecha_creacion: obra.fecha_creacion ? obra.fecha_creacion.split('T')[0] : '',
+        tipo: obra.tipo || ''
       });
       setEditMode(true);
     } else {
@@ -79,7 +105,26 @@ const ObrasContent = () => {
         estatus: 'DISPONIBLE',
         descripcion: '',
         foto_url: '',
-        tipo: ''
+        tipo: '',
+        tecnica: '',
+        soporte: '',
+        alto_cm: '',
+        ancho_cm: '',
+        material: '',
+        peso_kg: '',
+        largo_cm: '',
+        profundidad_cm: '',
+        camara: '',
+        lente: '',
+        tipo_impresion: '',
+        edicion: '',
+        metal_principal: '',
+        pureza: '',
+        piedras: '',
+        peso_gramos: '',
+        tipo_pasta: '',
+        esmalte: '',
+        temperatura_coccion_c: ''
       });
       setEditMode(false);
     }
@@ -95,14 +140,22 @@ const ObrasContent = () => {
       setEnviando(true);
       setError(null);
 
+      // Preparar datos, convirtiendo strings vacíos a null
+      const datosAEnviar = {
+        ...currentObra,
+        tipo: currentObra.tipo || null
+      };
+
       if (editMode) {
-        await obrasAdminService.actualizar(currentObra.obra_id, currentObra);
-        const obrasData = await obrasAdminService.obtenerTodos();
-        setObras(obrasData);
+        await obrasAdminService.actualizar(currentObra.obra_id, datosAEnviar);
       } else {
-        const nuevaObra = await obrasAdminService.crear(currentObra);
-        setObras([...obras, nuevaObra]);
+        await obrasAdminService.crear(datosAEnviar);
       }
+      
+      // Recargar todas las obras para obtener los datos completos del backend
+      const obrasData = await obrasAdminService.obtenerTodos();
+      setObras(obrasData);
+      
       handleClose();
     } catch (err) {
       setError(err.message || 'Error al guardar la obra');
@@ -126,6 +179,19 @@ const ObrasContent = () => {
 
   const handleChange = (field, value) => {
     setCurrentObra({ ...currentObra, [field]: value });
+  };
+
+  const handleVerDetalle = async (obra) => {
+    // Abrir modal inmediatamente con loading
+    setDetalleModal({ open: true, obra: null, loading: true });
+    
+    try {
+      const obraCompleta = await obrasAdminService.obtenerDetalle(obra.obra_id);
+      setDetalleModal({ open: true, obra: obraCompleta, loading: false });
+    } catch (err) {
+      console.error('Error al cargar detalle:', err);
+      setDetalleModal({ open: true, obra, loading: false });
+    }
   };
 
   const getEstatusColor = (estatus) => {
@@ -235,17 +301,28 @@ const ObrasContent = () => {
                   <TableCell>{obra.genero?.nombre || 'N/A'}</TableCell>
                   <TableCell>
                     {obra.tipo ? (
-                      <Chip 
-                        label={obra.tipo.charAt(0).toUpperCase() + obra.tipo.slice(1)} 
-                        size="small"
-                        sx={{ 
-                          backgroundColor: '#f5f5f5',
-                          color: '#666',
-                          borderRadius: 0,
-                          fontSize: '0.7rem',
-                          letterSpacing: '0.05em'
-                        }}
-                      />
+                      <Box className="flex items-center gap-2">
+                        <Chip 
+                          label={obra.tipo.charAt(0).toUpperCase() + obra.tipo.slice(1)} 
+                          size="small"
+                          sx={{ 
+                            backgroundColor: '#f5f5f5',
+                            color: '#666',
+                            borderRadius: 0,
+                            fontSize: '0.7rem',
+                            letterSpacing: '0.05em'
+                          }}
+                        />
+                        <Tooltip title="Ver detalles técnicos">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => handleVerDetalle(obra)}
+                            sx={{ padding: '4px' }}
+                          >
+                            <VisibilityIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     ) : 'N/A'}
                   </TableCell>
                   <TableCell>${parseFloat(obra.precio_usd || 0).toLocaleString()}</TableCell>
@@ -426,6 +503,230 @@ const ObrasContent = () => {
                 ))}
               </Select>
             </FormControl>
+
+            {/* Campos específicos por tipo - justo después del tipo */}
+            {currentObra.tipo === 'pintura' && (
+              <>
+                <TextField
+                  label="Técnica"
+                  value={currentObra.tecnica}
+                  onChange={(e) => handleChange('tecnica', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Soporte"
+                  value={currentObra.soporte}
+                  onChange={(e) => handleChange('soporte', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Alto (cm)"
+                  type="number"
+                  value={currentObra.alto_cm}
+                  onChange={(e) => handleChange('alto_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Ancho (cm)"
+                  type="number"
+                  value={currentObra.ancho_cm}
+                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+              </>
+            )}
+
+            {currentObra.tipo === 'escultura' && (
+              <>
+                <TextField
+                  label="Material"
+                  value={currentObra.material}
+                  onChange={(e) => handleChange('material', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Peso (kg)"
+                  type="number"
+                  value={currentObra.peso_kg}
+                  onChange={(e) => handleChange('peso_kg', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Alto (cm)"
+                  type="number"
+                  value={currentObra.alto_cm}
+                  onChange={(e) => handleChange('alto_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Ancho (cm)"
+                  type="number"
+                  value={currentObra.ancho_cm}
+                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Largo (cm)"
+                  type="number"
+                  value={currentObra.largo_cm}
+                  onChange={(e) => handleChange('largo_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Profundidad (cm)"
+                  type="number"
+                  value={currentObra.profundidad_cm}
+                  onChange={(e) => handleChange('profundidad_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+              </>
+            )}
+
+            {currentObra.tipo === 'fotografia' && (
+              <>
+                <TextField
+                  label="Cámara"
+                  value={currentObra.camara}
+                  onChange={(e) => handleChange('camara', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Lente"
+                  value={currentObra.lente}
+                  onChange={(e) => handleChange('lente', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Tipo de Impresión"
+                  value={currentObra.tipo_impresion}
+                  onChange={(e) => handleChange('tipo_impresion', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Edición"
+                  value={currentObra.edicion}
+                  onChange={(e) => handleChange('edicion', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Alto (cm)"
+                  type="number"
+                  value={currentObra.alto_cm}
+                  onChange={(e) => handleChange('alto_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Ancho (cm)"
+                  type="number"
+                  value={currentObra.ancho_cm}
+                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+              </>
+            )}
+
+            {currentObra.tipo === 'orfebreria' && (
+              <>
+                <TextField
+                  label="Metal Principal"
+                  value={currentObra.metal_principal}
+                  onChange={(e) => handleChange('metal_principal', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Pureza"
+                  value={currentObra.pureza}
+                  onChange={(e) => handleChange('pureza', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Piedras"
+                  value={currentObra.piedras}
+                  onChange={(e) => handleChange('piedras', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                  className="md:col-span-2"
+                />
+                <TextField
+                  label="Peso (gramos)"
+                  type="number"
+                  value={currentObra.peso_gramos}
+                  onChange={(e) => handleChange('peso_gramos', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+              </>
+            )}
+
+            {currentObra.tipo === 'ceramica' && (
+              <>
+                <TextField
+                  label="Tipo de Pasta"
+                  value={currentObra.tipo_pasta}
+                  onChange={(e) => handleChange('tipo_pasta', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Esmalte"
+                  value={currentObra.esmalte}
+                  onChange={(e) => handleChange('esmalte', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Temperatura de Cocción (°C)"
+                  type="number"
+                  value={currentObra.temperatura_coccion_c}
+                  onChange={(e) => handleChange('temperatura_coccion_c', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Alto (cm)"
+                  type="number"
+                  value={currentObra.alto_cm}
+                  onChange={(e) => handleChange('alto_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Ancho (cm)"
+                  type="number"
+                  value={currentObra.ancho_cm}
+                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+                <TextField
+                  label="Largo (cm)"
+                  type="number"
+                  value={currentObra.largo_cm}
+                  onChange={(e) => handleChange('largo_cm', e.target.value)}
+                  fullWidth
+                  variant="standard"
+                />
+              </>
+            )}
+
             <TextField
               label="URL de Foto"
               value={currentObra.foto_url}
@@ -488,6 +789,112 @@ const ObrasContent = () => {
             style={{ maxWidth: '100%', maxHeight: '65vh', width: 'auto', height: 'auto', objectFit: 'contain' }}
           />
         </DialogContent>
+      </Dialog>
+
+      {/* Modal Detalles Técnicos */}
+      <Dialog open={detalleModal.open} onClose={() => setDetalleModal({ open: false, obra: null, loading: false })} maxWidth="sm" fullWidth>
+        <DialogTitle className="font-light tracking-wide flex justify-between items-center border-b">
+          Detalles Técnicos
+          <IconButton onClick={() => setDetalleModal({ open: false, obra: null, loading: false })} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className="mt-4">
+          {detalleModal.loading ? (
+            <Box className="flex justify-center py-8">
+              <CircularProgress />
+            </Box>
+          ) : detalleModal.obra ? (
+            <Box className="space-y-3">
+              <Typography variant="h6" className="font-light mb-3">{detalleModal.obra.nombre}</Typography>
+              
+              {detalleModal.obra.tipo === 'pintura' && detalleModal.obra.pintura && (
+                <>
+                  {detalleModal.obra.pintura.tecnica && (
+                    <Box><Typography variant="caption" className="text-gray-600">Técnica:</Typography><Typography>{detalleModal.obra.pintura.tecnica}</Typography></Box>
+                  )}
+                  {detalleModal.obra.pintura.soporte && (
+                    <Box><Typography variant="caption" className="text-gray-600">Soporte:</Typography><Typography>{detalleModal.obra.pintura.soporte}</Typography></Box>
+                  )}
+                  {(detalleModal.obra.pintura.alto_cm || detalleModal.obra.pintura.ancho_cm) && (
+                    <Box><Typography variant="caption" className="text-gray-600">Dimensiones:</Typography><Typography>{detalleModal.obra.pintura.alto_cm} x {detalleModal.obra.pintura.ancho_cm} cm</Typography></Box>
+                  )}
+                </>
+              )}
+
+              {detalleModal.obra.tipo === 'escultura' && detalleModal.obra.escultura && (
+                <>
+                  {detalleModal.obra.escultura.material && (
+                    <Box><Typography variant="caption" className="text-gray-600">Material:</Typography><Typography>{detalleModal.obra.escultura.material}</Typography></Box>
+                  )}
+                  {detalleModal.obra.escultura.peso_kg && (
+                    <Box><Typography variant="caption" className="text-gray-600">Peso:</Typography><Typography>{detalleModal.obra.escultura.peso_kg} kg</Typography></Box>
+                  )}
+                  {(detalleModal.obra.escultura.alto_cm || detalleModal.obra.escultura.ancho_cm || detalleModal.obra.escultura.largo_cm) && (
+                    <Box><Typography variant="caption" className="text-gray-600">Dimensiones:</Typography><Typography>{detalleModal.obra.escultura.alto_cm} x {detalleModal.obra.escultura.ancho_cm} x {detalleModal.obra.escultura.largo_cm} cm</Typography></Box>
+                  )}
+                </>
+              )}
+
+              {detalleModal.obra.tipo === 'fotografia' && detalleModal.obra.fotografia && (
+                <>
+                  {detalleModal.obra.fotografia.camara && (
+                    <Box><Typography variant="caption" className="text-gray-600">Cámara:</Typography><Typography>{detalleModal.obra.fotografia.camara}</Typography></Box>
+                  )}
+                  {detalleModal.obra.fotografia.lente && (
+                    <Box><Typography variant="caption" className="text-gray-600">Lente:</Typography><Typography>{detalleModal.obra.fotografia.lente}</Typography></Box>
+                  )}
+                  {detalleModal.obra.fotografia.tipo_impresion && (
+                    <Box><Typography variant="caption" className="text-gray-600">Tipo de Impresión:</Typography><Typography>{detalleModal.obra.fotografia.tipo_impresion}</Typography></Box>
+                  )}
+                  {detalleModal.obra.fotografia.edicion && (
+                    <Box><Typography variant="caption" className="text-gray-600">Edición:</Typography><Typography>{detalleModal.obra.fotografia.edicion}</Typography></Box>
+                  )}
+                </>
+              )}
+
+              {detalleModal.obra.tipo === 'orfebreria' && detalleModal.obra.orfebreria && (
+                <>
+                  {detalleModal.obra.orfebreria.metal_principal && (
+                    <Box><Typography variant="caption" className="text-gray-600">Metal Principal:</Typography><Typography>{detalleModal.obra.orfebreria.metal_principal}</Typography></Box>
+                  )}
+                  {detalleModal.obra.orfebreria.pureza && (
+                    <Box><Typography variant="caption" className="text-gray-600">Pureza:</Typography><Typography>{detalleModal.obra.orfebreria.pureza}</Typography></Box>
+                  )}
+                  {detalleModal.obra.orfebreria.piedras && (
+                    <Box><Typography variant="caption" className="text-gray-600">Piedras:</Typography><Typography>{detalleModal.obra.orfebreria.piedras}</Typography></Box>
+                  )}
+                  {detalleModal.obra.orfebreria.peso_gramos && (
+                    <Box><Typography variant="caption" className="text-gray-600">Peso:</Typography><Typography>{detalleModal.obra.orfebreria.peso_gramos} g</Typography></Box>
+                  )}
+                </>
+              )}
+
+              {detalleModal.obra.tipo === 'ceramica' && detalleModal.obra.ceramica && (
+                <>
+                  {detalleModal.obra.ceramica.tipo_pasta && (
+                    <Box><Typography variant="caption" className="text-gray-600">Tipo de Pasta:</Typography><Typography>{detalleModal.obra.ceramica.tipo_pasta}</Typography></Box>
+                  )}
+                  {detalleModal.obra.ceramica.esmalte && (
+                    <Box><Typography variant="caption" className="text-gray-600">Esmalte:</Typography><Typography>{detalleModal.obra.ceramica.esmalte}</Typography></Box>
+                  )}
+                  {detalleModal.obra.ceramica.temperatura_coccion_c && (
+                    <Box><Typography variant="caption" className="text-gray-600">Temperatura de Cocción:</Typography><Typography>{detalleModal.obra.ceramica.temperatura_coccion_c}°C</Typography></Box>
+                  )}
+                </>
+              )}
+
+              {!detalleModal.obra.tipo && (
+                <Typography variant="body2" className="text-gray-500">No hay detalles técnicos disponibles</Typography>
+              )}
+            </Box>
+          ) : null}
+        </DialogContent>
+        <DialogActions className="p-4 border-t">
+          <Button onClick={() => setDetalleModal({ open: false, obra: null, loading: false })} sx={{ borderRadius: 0 }}>
+            Cerrar
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
