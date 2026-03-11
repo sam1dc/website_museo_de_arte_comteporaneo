@@ -107,7 +107,7 @@ const UsuariosContent = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       try {
         await usuariosAdminService.eliminar(id);
-        setUsuarios(usuarios.filter(u => u.id !== id));
+        setUsuarios(usuarios.filter(u => u.empleado_id !== id));
       } catch (err) {
         setError('Error al eliminar el usuario');
         console.error(err);
@@ -174,7 +174,7 @@ const UsuariosContent = () => {
           </TableHead>
           <TableBody>
             {usuarios.map((usuario) => (
-              <TableRow key={usuario.id} hover>
+              <TableRow key={usuario.empleado_id} hover>
                 <TableCell>
                   <Typography className="font-medium">{usuario.nombre_completo}</Typography>
                 </TableCell>
@@ -198,7 +198,7 @@ const UsuariosContent = () => {
                   <IconButton size="small" onClick={() => handleOpen(usuario)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(usuario.id)}>
+                  <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -211,7 +211,7 @@ const UsuariosContent = () => {
       {/* Vista Mobile */}
       <Box className="block md:hidden space-y-4">
         {usuarios.map((usuario) => (
-          <Paper key={usuario.id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
+          <Paper key={usuario.empleado_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
             <Box className="flex justify-between items-start mb-3">
               <Box>
                 <Typography className="font-medium text-lg">{usuario.nombre_completo}</Typography>
@@ -241,7 +241,7 @@ const UsuariosContent = () => {
                 <IconButton size="small" onClick={() => handleOpen(usuario)}>
                   <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small" onClick={() => handleDelete(usuario.id)}>
+                <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
                   <DeleteIcon fontSize="small" />
                 </IconButton>
               </Box>
