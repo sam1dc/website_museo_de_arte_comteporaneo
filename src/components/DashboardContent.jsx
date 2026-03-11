@@ -1,12 +1,48 @@
-import { Box, Typography, Paper, Grid } from '@mui/material';
-import { People, Palette, Event } from '@mui/icons-material';
+import { useState, useEffect, useRef } from 'react';
+import { Box, Typography, Paper, Grid, CircularProgress } from '@mui/material';
+import { People, Palette, Image } from '@mui/icons-material';
+import { apiCall } from '../services/api';
 
 const DashboardContent = () => {
-  const stats = [
-    { label: 'Usuarios', value: '124', icon: <People fontSize="large" /> },
-    { label: 'Obras', value: '89', icon: <Palette fontSize="large" /> },
-    { label: 'Eventos', value: '12', icon: <Event fontSize="large" /> }
-  ];
+  const [stats, setStats] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const cargadoRef = useRef(false);
+
+  useEffect(() => {
+    if (cargadoRef.current) return;
+    cargadoRef.current = true;
+
+    const cargarDatos = async () => {
+      try {
+        setCargando(true);
+        const response = await apiCall('/admin/dashboard');
+        const data = response.data || response;
+        
+        setStats([
+          { label: 'Compradores', value: data.usuarios_count || 0, icon: <People fontSize="large" /> },
+          { label: 'Obras', value: data.obras_count || 0, icon: <Image fontSize="large" /> }
+        ]);
+      } catch (error) {
+        console.error('Error al cargar dashboard:', error);
+        setStats([
+          { label: 'Compradores', value: '0', icon: <People fontSize="large" /> },
+          { label: 'Obras', value: '0', icon: <Image fontSize="large" /> }
+        ]);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, []);
+
+  if (cargando) {
+    return (
+      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -15,8 +51,8 @@ const DashboardContent = () => {
       </Typography>
       
       <Grid container spacing={3}>
-        {stats.map((stat) => (
-          <Grid item xs={12} md={4} key={stat.label}>
+        {stats && stats.map((stat) => (
+          <Grid item xs={12} md={6} key={stat.label}>
             <Paper className="p-6 border border-gray-200" elevation={0}>
               <Box className="flex items-center justify-between">
                 <Box>

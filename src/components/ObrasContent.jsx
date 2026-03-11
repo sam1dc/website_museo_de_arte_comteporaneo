@@ -22,10 +22,19 @@ const ObrasContent = () => {
     fecha_creacion: '',
     estatus: 'DISPONIBLE',
     descripcion: '',
-    foto_url: ''
+    foto_url: '',
+    tipo: ''
   });
 
   const estatusOptions = ['DISPONIBLE', 'RESERVADA', 'VENDIDA'];
+  const tipoOptions = [
+    { value: '', label: 'Sin especificar' },
+    { value: 'pintura', label: 'Pintura' },
+    { value: 'escultura', label: 'Escultura' },
+    { value: 'fotografia', label: 'Fotografía' },
+    { value: 'orfebreria', label: 'Orfebrería' },
+    { value: 'ceramica', label: 'Cerámica' }
+  ];
 
   useEffect(() => {
     if (cargadoRef.current) return;
@@ -69,7 +78,8 @@ const ObrasContent = () => {
         fecha_creacion: '',
         estatus: 'DISPONIBLE',
         descripcion: '',
-        foto_url: ''
+        foto_url: '',
+        tipo: ''
       });
       setEditMode(false);
     }
@@ -177,6 +187,7 @@ const ObrasContent = () => {
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Obra</TableCell>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Artista</TableCell>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Género</TableCell>
+              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Tipo</TableCell>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Precio</TableCell>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Fecha Creación</TableCell>
               <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Estatus</TableCell>
@@ -222,6 +233,21 @@ const ObrasContent = () => {
                   </TableCell>
                   <TableCell>{obra.artista?.nombre_completo || 'N/A'}</TableCell>
                   <TableCell>{obra.genero?.nombre || 'N/A'}</TableCell>
+                  <TableCell>
+                    {obra.tipo ? (
+                      <Chip 
+                        label={obra.tipo.charAt(0).toUpperCase() + obra.tipo.slice(1)} 
+                        size="small"
+                        sx={{ 
+                          backgroundColor: '#f5f5f5',
+                          color: '#666',
+                          borderRadius: 0,
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.05em'
+                        }}
+                      />
+                    ) : 'N/A'}
+                  </TableCell>
                   <TableCell>${parseFloat(obra.precio_usd || 0).toLocaleString()}</TableCell>
                   <TableCell>{obra.fecha_creacion ? new Date(obra.fecha_creacion).toLocaleDateString() : 'N/A'}</TableCell>
                   <TableCell>
@@ -382,6 +408,20 @@ const ObrasContent = () => {
                 {estatusOptions.map((estatus) => (
                   <MenuItem key={estatus} value={estatus}>
                     {estatus}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth variant="standard">
+              <InputLabel>Tipo de Obra</InputLabel>
+              <Select
+                value={currentObra.tipo || ''}
+                onChange={(e) => handleChange('tipo', e.target.value)}
+                label="Tipo de Obra"
+              >
+                {tipoOptions.map((tipo) => (
+                  <MenuItem key={tipo.value} value={tipo.value}>
+                    {tipo.label}
                   </MenuItem>
                 ))}
               </Select>

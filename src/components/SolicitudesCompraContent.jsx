@@ -67,7 +67,7 @@ const SolicitudesCompraContent = () => {
       setDialogOpen(false);
       setSolicitudSeleccionada(null);
       cargarSolicitudes();
-      alert('Factura generada exitosamente. La obra ahora está VENDIDA.');
+      alert('Factura generada exitosamente. La obra ahora está VENDIDA y la factura ha sido enviada al correo del comprador.');
     } catch (err) {
       setError(err.message || 'Error al generar la factura');
     } finally {
@@ -217,7 +217,7 @@ const SolicitudesCompraContent = () => {
           {solicitudSeleccionada && (
             <Box className="space-y-4">
               <Alert severity="info">
-                Se generará la factura y se enviará por correo al comprador. La obra cambiará a estatus VENDIDA.
+                Se generará la factura y se enviará automáticamente por correo al comprador. La obra cambiará a estatus VENDIDA.
               </Alert>
 
               <Box>
