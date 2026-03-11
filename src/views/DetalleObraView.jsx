@@ -90,7 +90,7 @@ const DetalleObraView = () => {
           </div>
         </div>
 
-        <div>
+        <div className="flex flex-col h-[400px] md:h-[500px] lg:h-[600px]">
           <Box className="flex gap-2 mb-4">
             <Chip 
               label={obra.genero?.nombre} 
@@ -144,20 +144,22 @@ const DetalleObraView = () => {
             </Typography>
           </Box>
 
-          <Box className="mb-6">
-            <Typography 
-              className="text-gray-600 font-light mb-2 uppercase"
-              sx={{ fontSize: '0.75rem', letterSpacing: '0.1em' }}
-            >
-              Descripción
-            </Typography>
-            <Typography 
-              className="font-light text-gray-800 leading-relaxed"
-              sx={{ fontSize: '0.95rem', letterSpacing: '0.02em' }}
-            >
-              {obra.descripcion}
-            </Typography>
-          </Box>
+          {/* Área con scroll */}
+          <div className="flex-1 overflow-y-auto pr-2 mb-6" style={{ scrollbarWidth: 'thin' }}>
+            <Box className="mb-6">
+              <Typography 
+                className="text-gray-600 font-light mb-2 uppercase"
+                sx={{ fontSize: '0.75rem', letterSpacing: '0.1em' }}
+              >
+                Descripción
+              </Typography>
+              <Typography 
+                className="font-light text-gray-800 leading-relaxed"
+                sx={{ fontSize: '0.95rem', letterSpacing: '0.02em' }}
+              >
+                {obra.descripcion}
+              </Typography>
+            </Box>
 
           <Box className="mb-6 grid grid-cols-2 gap-4">
             <Box>
@@ -356,8 +358,10 @@ const DetalleObraView = () => {
               </Box>
             </Box>
           )}
+          </div>
+          {/* Fin área con scroll */}
 
-          <Box className="mt-8 pt-8 border-t border-gray-200">
+          <Box className="pt-6 border-t border-gray-200">
             <Typography 
               variant="h4" 
               className="font-light mb-6"
