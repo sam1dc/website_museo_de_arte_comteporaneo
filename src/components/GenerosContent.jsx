@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { generosAdminService } from '../services';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const GenerosContent = () => {
+  const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
   const [generos, setGeneros] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -70,15 +73,21 @@ const GenerosContent = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este género?')) {
-      try {
-        await generosAdminService.eliminar(id);
-        setGeneros(generos.filter(g => g.genero_id !== id));
-      } catch (err) {
-        setError('Error al eliminar el género');
-        console.error(err);
+    const genero = generos.find(g => g.genero_id === id);
+    confirmDelete({
+      title: 'Eliminar Género',
+      message: '¿Estás seguro de que deseas eliminar este género?',
+      itemName: genero?.nombre,
+      onConfirm: async () => {
+        try {
+          await generosAdminService.eliminar(id);
+          setGeneros(generos.filter(g => g.genero_id !== id));
+        } catch (err) {
+          setError('Error al eliminar el género');
+          console.error(err);
+        }
       }
-    }
+    });
   };
 
   return (
@@ -225,6 +234,16 @@ const GenerosContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ConfirmDeleteDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        itemName={deleteDialog.itemName}
+      />
     </Box>
   );
 };

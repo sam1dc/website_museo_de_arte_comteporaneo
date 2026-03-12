@@ -2,8 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Tooltip, Avatar, Chip } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon } from '@mui/icons-material';
 import { artistasAdminService, generosAdminService } from '../services';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const ArtistasContent = () => {
+  const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
   const [artistas, setArtistas] = useState([]);
   const [generos, setGeneros] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -98,15 +101,21 @@ const ArtistasContent = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este artista?')) {
-      try {
-        await artistasAdminService.eliminar(id);
-        setArtistas(artistas.filter(a => a.artista_id !== id));
-      } catch (err) {
-        setError('Error al eliminar el artista');
-        console.error(err);
+    const artista = artistas.find(a => a.artista_id === id);
+    confirmDelete({
+      title: 'Eliminar Artista',
+      message: '¿Estás seguro de que deseas eliminar este artista?',
+      itemName: `${artista?.nombres} ${artista?.apellidos}`,
+      onConfirm: async () => {
+        try {
+          await artistasAdminService.eliminar(id);
+          setArtistas(artistas.filter(a => a.artista_id !== id));
+        } catch (err) {
+          setError('Error al eliminar el artista');
+          console.error(err);
+        }
       }
-    }
+    });
   };
 
   const renderGeneros = (generos) => {
@@ -417,6 +426,16 @@ const ArtistasContent = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ConfirmDeleteDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        itemName={deleteDialog.itemName}
+      />
     </Box>
   );
 };

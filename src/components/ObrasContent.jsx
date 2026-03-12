@@ -5,9 +5,12 @@ import { obrasAdminService, artistasAdminService, generosAdminService } from '..
 import { useAuth } from '../hooks/useAuth';
 import { PERMISOS } from '../utils/permissions';
 import ProtectedAction from './ProtectedAction';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const ObrasContent = () => {
   const { tienePermiso } = useAuth();
+  const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
   const puedeEditarObras = tienePermiso(PERMISOS.EDITAR_OBRAS) || tienePermiso(PERMISOS.ELIMINAR_OBRAS);
   const [obras, setObras] = useState([]);
   const [artistas, setArtistas] = useState([]);
@@ -228,15 +231,21 @@ const ObrasContent = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta obra?')) {
-      try {
-        await obrasAdminService.eliminar(id);
-        setObras(obras.filter(o => o.obra_id !== id));
-      } catch (err) {
-        setError('Error al eliminar la obra');
-        console.error(err);
+    const obra = obras.find(o => o.obra_id === id);
+    confirmDelete({
+      title: 'Eliminar Obra',
+      message: '¿Estás seguro de que deseas eliminar esta obra?',
+      itemName: obra?.nombre,
+      onConfirm: async () => {
+        try {
+          await obrasAdminService.eliminar(id);
+          setObras(obras.filter(o => o.obra_id !== id));
+        } catch (err) {
+          setError('Error al eliminar la obra');
+          console.error(err);
+        }
       }
-    }
+    });
   };
 
   const handleChange = (field, value) => {
@@ -975,6 +984,16 @@ const ObrasContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ConfirmDeleteDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        itemName={deleteDialog.itemName}
+      />
     </Box>
   );
 };

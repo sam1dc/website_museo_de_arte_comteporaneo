@@ -5,9 +5,12 @@ import { usuariosAdminService } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { PERMISOS } from '../utils/permissions';
 import ProtectedAction from './ProtectedAction';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const UsuariosContent = () => {
   const { tienePermiso } = useAuth();
+  const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -108,15 +111,21 @@ const UsuariosContent = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-      try {
-        await usuariosAdminService.eliminar(id);
-        setUsuarios(usuarios.filter(u => u.empleado_id !== id));
-      } catch (err) {
-        setError('Error al eliminar el usuario');
-        console.error(err);
+    const usuario = usuarios.find(u => u.empleado_id === id);
+    confirmDelete({
+      title: 'Eliminar Usuario',
+      message: '¿Estás seguro de que deseas eliminar este usuario?',
+      itemName: usuario?.nombre_completo,
+      onConfirm: async () => {
+        try {
+          await usuariosAdminService.eliminar(id);
+          setUsuarios(usuarios.filter(u => u.empleado_id !== id));
+        } catch (err) {
+          setError('Error al eliminar el usuario');
+          console.error(err);
+        }
       }
-    }
+    });
   };
 
   const handleChange = (field, value) => {
@@ -353,6 +362,16 @@ const UsuariosContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ConfirmDeleteDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        itemName={deleteDialog.itemName}
+      />
     </Box>
   );
 };

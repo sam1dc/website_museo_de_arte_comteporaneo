@@ -5,8 +5,11 @@ import { compradoresAdminService } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { PERMISOS } from '../utils/permissions';
 import ProtectedAction from './ProtectedAction';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const CompradoresContent = () => {
+  const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
   const [compradores, setCompradores] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [cargandoPreguntas, setCargandoPreguntas] = useState(false);
@@ -119,15 +122,21 @@ const CompradoresContent = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este comprador?')) {
-      try {
-        await compradoresAdminService.eliminar(id);
-        setCompradores(compradores.filter(c => c.comprador_id !== id));
-      } catch (err) {
-        setError(err.message || 'Error al eliminar el comprador');
-        console.error(err);
+    const comprador = compradores.find(c => c.comprador_id === id);
+    confirmDelete({
+      title: 'Eliminar Comprador',
+      message: '¿Estás seguro de que deseas eliminar este comprador?',
+      itemName: comprador?.nombre_completo,
+      onConfirm: async () => {
+        try {
+          await compradoresAdminService.eliminar(id);
+          setCompradores(compradores.filter(c => c.comprador_id !== id));
+        } catch (err) {
+          setError('Error al eliminar el comprador');
+          console.error(err);
+        }
       }
-    }
+    });
   };
 
   const handleOpenPreguntas = async (comprador) => {
@@ -533,6 +542,16 @@ const CompradoresContent = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Modal de Confirmación de Eliminación */}
+      <ConfirmDeleteDialog
+        open={deleteDialog.open}
+        onClose={handleDeleteClose}
+        onConfirm={handleConfirm}
+        title={deleteDialog.title}
+        message={deleteDialog.message}
+        itemName={deleteDialog.itemName}
+      />
     </Box>
   );
 };
