@@ -150,6 +150,8 @@ const DashboardContent = () => {
           reportesAdminService.obrasVendidas(rangoFechas)
         ]);
 
+        console.log('Respuestas de la API:', { facturacionRes, obrasVendidasRes });
+
         // Contar obras disponibles correctamente
         const obrasDisponibles = obrasData.filter(obra => obra.estatus === 'DISPONIBLE').length;
         
@@ -159,9 +161,20 @@ const DashboardContent = () => {
           obrasDisponibles: obrasDisponibles
         });
 
-        const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
-        const topArtistas = procesarTopArtistas(obrasVendidasRes.data || []);
-        const comprasPorMes = procesarComprasPorMes(obrasVendidasRes.data || []);
+        // Manejar diferentes estructuras de respuesta
+        const facturacionData = facturacionRes?.data || facturacionRes || [];
+        const obrasVendidasData = obrasVendidasRes?.data || obrasVendidasRes || [];
+
+        const ventasPorMes = procesarVentasPorMes(facturacionData);
+        const topArtistas = procesarTopArtistas(obrasVendidasData);
+        const comprasPorMes = procesarComprasPorMes(obrasVendidasData);
+
+        console.log('Datos procesados:', {
+          facturacionData,
+          obrasVendidasData,
+          comprasPorMes,
+          topArtistas
+        });
 
         setReportes({
           ventasPorMes,
@@ -212,9 +225,13 @@ const DashboardContent = () => {
         obrasDisponibles: obrasDisponibles
       });
 
-      const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
-      const topArtistas = procesarTopArtistas(obrasVendidasRes.data || []);
-      const comprasPorMes = procesarComprasPorMes(obrasVendidasRes.data || []);
+      // Manejar diferentes estructuras de respuesta
+      const facturacionData = facturacionRes?.data || facturacionRes || [];
+      const obrasVendidasData = obrasVendidasRes?.data || obrasVendidasRes || [];
+
+      const ventasPorMes = procesarVentasPorMes(facturacionData);
+      const topArtistas = procesarTopArtistas(obrasVendidasData);
+      const comprasPorMes = procesarComprasPorMes(obrasVendidasData);
 
       setReportes({
         ventasPorMes,
@@ -384,7 +401,7 @@ const DashboardContent = () => {
             </>
           ) : (
             <>
-              {reportes?.comprasPorMes && (
+              {reportes?.comprasPorMes && reportes.comprasPorMes.length > 0 ? (
                 <Paper className="p-8 border border-gray-200" elevation={0}>
               <Typography variant="h6" className="font-light tracking-wide mb-6">
                 Obras Vendidas por Mes
@@ -405,9 +422,18 @@ const DashboardContent = () => {
                 </BarChart>
               </ResponsiveContainer>
             </Paper>
-          )}
+              ) : (
+                <Paper className="p-8 border border-gray-200" elevation={0}>
+                  <Typography variant="h6" className="font-light tracking-wide mb-6">
+                    Obras Vendidas por Mes
+                  </Typography>
+                  <Typography className="text-gray-500 text-center py-8">
+                    No hay datos de ventas en el rango seleccionado
+                  </Typography>
+                </Paper>
+              )}
 
-          {reportes?.topArtistas && (
+          {reportes?.topArtistas && reportes.topArtistas.length > 0 ? (
             <Paper className="p-8 border border-gray-200" elevation={0}>
               <Typography variant="h6" className="font-light tracking-wide mb-6">
                 Top Artistas por Ventas
@@ -427,6 +453,15 @@ const DashboardContent = () => {
                   <Bar dataKey="ventas" fill="#000" name="Ventas" />
                 </BarChart>
               </ResponsiveContainer>
+            </Paper>
+          ) : (
+            <Paper className="p-8 border border-gray-200" elevation={0}>
+              <Typography variant="h6" className="font-light tracking-wide mb-6">
+                Top Artistas por Ventas
+              </Typography>
+              <Typography className="text-gray-500 text-center py-8">
+                No hay datos de ventas por artista en el rango seleccionado
+              </Typography>
             </Paper>
           )}
             </>
