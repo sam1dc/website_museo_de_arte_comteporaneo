@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 import PublicLayout from '../layouts/PublicLayout';
@@ -23,11 +23,14 @@ import MisComprasView from '../views/MisComprasView';
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* Redirección por defecto */}
+      <Route path="/" element={<Navigate to="/museo-de-arte-contemporaneo" replace />} />
+
       {/* Login Unificado */}
       <Route path="/login" element={<LoginView />} />
 
       {/* Panel Administrativo */}
-      <Route path="/" element={
+      <Route path="/admin" element={
         <ProtectedRoute>
           <MainLayout />
         </ProtectedRoute>
