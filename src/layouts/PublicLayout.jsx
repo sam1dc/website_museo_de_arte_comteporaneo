@@ -86,8 +86,8 @@ const PublicLayout = () => {
               </Typography>
             </Link>
 
-            <Box className="flex items-center gap-6">
-              <Link to="/museo-de-arte-contemporaneo" className="no-underline">
+            <Box className="flex items-center gap-3 sm:gap-6">
+              <Link to="/museo-de-arte-contemporaneo" className="no-underline hidden sm:block">
                 <Typography 
                   className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
                   sx={{ letterSpacing: '0.1em', fontWeight: 300 }}
@@ -97,7 +97,7 @@ const PublicLayout = () => {
               </Link>
               <Link to="/museo-de-arte-contemporaneo/catalogo" className="no-underline">
                 <Typography 
-                  className="text-black text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
+                  className="text-black text-xs sm:text-sm tracking-wider hover:text-gray-600 transition-colors uppercase"
                   sx={{ letterSpacing: '0.1em', fontWeight: 300 }}
                 >
                   Catálogo
@@ -111,14 +111,17 @@ const PublicLayout = () => {
                     endIcon={<KeyboardArrowDown />}
                     sx={{
                       color: '#000',
-                      fontSize: '0.875rem',
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
                       letterSpacing: '0.05em',
                       fontWeight: 300,
                       textTransform: 'none',
+                      padding: { xs: '4px 8px', sm: '6px 16px' },
+                      minWidth: 'auto',
                       '&:hover': { backgroundColor: 'transparent', color: '#666' }
                     }}
                   >
-                    {comprador.data?.nombre_completo || comprador.data?.nombres || 'Usuario'}
+                    <span className="hidden sm:inline">{comprador.data?.nombre_completo || comprador.data?.nombres || 'Usuario'}</span>
+                    <span className="sm:hidden">Cuenta</span>
                   </Button>
                   <Menu
                     anchorEl={anchorEl}
@@ -181,10 +184,12 @@ const PublicLayout = () => {
                   onClick={() => navigate('/login')}
                   sx={{
                     color: '#000',
-                    fontSize: '0.875rem',
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     letterSpacing: '0.1em',
                     fontWeight: 300,
                     textTransform: 'uppercase',
+                    padding: { xs: '4px 8px', sm: '6px 16px' },
+                    minWidth: 'auto',
                     '&:hover': { backgroundColor: 'transparent', color: '#666' }
                   }}
                 >
