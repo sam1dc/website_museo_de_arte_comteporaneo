@@ -1,13 +1,15 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Box, Button, Container, Menu, MenuItem } from '@mui/material';
-import { ShoppingBag, Logout, KeyboardArrowDown } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, Box, Button, Container, Menu, MenuItem, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { ShoppingBag, Logout, KeyboardArrowDown, Security } from '@mui/icons-material';
 import { useState } from 'react';
 import Footer from '../components/Footer';
+import RecuperarCodigoForm from '../components/RecuperarCodigoForm';
 
 const PublicLayout = () => {
   const navigate = useNavigate();
   const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
   const [anchorEl, setAnchorEl] = useState(null);
+  const [recuperarOpen, setRecuperarOpen] = useState(false);
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
@@ -27,6 +29,15 @@ const PublicLayout = () => {
   const handleMisCompras = () => {
     handleClose();
     navigate('/museo-de-arte-contemporaneo/mis-compras');
+  };
+
+  const handleRecuperarCodigo = () => {
+    handleClose();
+    setRecuperarOpen(true);
+  };
+
+  const handleCloseRecuperar = () => {
+    setRecuperarOpen(false);
   };
 
   return (
@@ -136,6 +147,20 @@ const PublicLayout = () => {
                       Mis Compras
                     </MenuItem>
                     <MenuItem 
+                      onClick={handleRecuperarCodigo}
+                      sx={{
+                        fontSize: '0.875rem',
+                        letterSpacing: '0.05em',
+                        fontWeight: 300,
+                        py: 1.5,
+                        px: 3,
+                        gap: 1.5
+                      }}
+                    >
+                      <Security sx={{ fontSize: '1.1rem' }} />
+                      ¿Olvidaste tu código de seguridad?
+                    </MenuItem>
+                    <MenuItem 
                       onClick={handleLogout}
                       sx={{
                         fontSize: '0.875rem',
@@ -176,6 +201,19 @@ const PublicLayout = () => {
       </Box>
 
       <Footer />
+
+      {/* Modal Recuperar Código */}
+      <Dialog open={recuperarOpen} onClose={handleCloseRecuperar} maxWidth="sm" fullWidth>
+        <DialogTitle className="font-light tracking-wide">
+          Recuperar Código de Seguridad
+        </DialogTitle>
+        <DialogContent>
+          <RecuperarCodigoForm 
+            onSuccess={handleCloseRecuperar}
+            onCancel={handleCloseRecuperar}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

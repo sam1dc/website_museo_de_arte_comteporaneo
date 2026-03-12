@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Container, Typography, Alert, ToggleButtonGroup, ToggleButton, Link as MuiLink, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { Close as CloseIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import RegistroForm from '../components/RegistroForm';
@@ -66,8 +66,22 @@ const LoginView = () => {
       </Box>
 
       <Container maxWidth={mode === 'registro' ? 'md' : 'sm'} className="relative z-10 px-4">
-        <Box className="bg-white/95 backdrop-blur-sm p-6 sm:p-12 md:p-16 border border-gray-100">
-          <Box className="mb-8 sm:mb-12">
+        <Box className="bg-white/95 backdrop-blur-sm p-6 sm:p-12 md:p-16 border border-gray-100 relative">
+          {/* Botón de volver */}
+          <IconButton
+            onClick={() => navigate('/museo-de-arte-contemporaneo')}
+            sx={{
+              position: 'absolute',
+              top: 16,
+              left: 16,
+              color: '#666',
+              '&:hover': { color: '#000', backgroundColor: 'rgba(0,0,0,0.04)' }
+            }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+
+          <Box className="mb-8 sm:mb-12 mt-8">
             <Typography 
               variant="h3" 
               className="font-extralight tracking-widest text-black mb-3 uppercase text-2xl sm:text-3xl"
@@ -158,7 +172,7 @@ const LoginView = () => {
                     letterSpacing: '0.1em'
                   }}
                 >
-                  Volver al catálogo
+                  Volver a inicio
                 </MuiLink>
               </Box>
             </>
@@ -185,7 +199,7 @@ const LoginView = () => {
                     letterSpacing: '0.1em'
                   }}
                 >
-                  Volver al catálogo
+                  Volver a inicio
                 </MuiLink>
               </Box>
             </>

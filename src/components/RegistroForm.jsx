@@ -6,7 +6,7 @@ import useForm from '../hooks/useForm';
 const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
   const [error, setError] = useState('');
   const [paso, setPaso] = useState(0);
-  const [membresia, setMembresia] = useState('ninguna');
+  const [membresia, setMembresia] = useState('basica');
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -68,13 +68,10 @@ const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
       }
     }
 
-    // Validar paso 2 (si eligió membresía, ir a paso 3, sino enviar)
+    // Validar paso 2 (ir a preguntas de seguridad)
     if (paso === 1) {
-      if (membresia === 'ninguna') {
-        // Sin membresía, ir a preguntas de seguridad
-        setPaso(2);
-        return;
-      }
+      setPaso(2);
+      return;
     }
 
     // Validar paso 3 (preguntas de seguridad)
@@ -83,11 +80,9 @@ const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
         setError('Por favor completa todas las preguntas y respuestas');
         return;
       }
-      // Si tiene membresía, ir a pago; sino, enviar
-      if (membresia === 'ninguna') {
-        handleSubmitFinal();
-        return;
-      }
+      // Ir a pago
+      setPaso(3);
+      return;
     }
 
     // Validar paso 4 (datos de pago)
@@ -156,19 +151,15 @@ const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
 
       {/* Stepper */}
       <Stepper activeStep={paso} alternativeLabel sx={{ mb: 4 }}>
-        {pasos.map((label, index) => {
-          // Ocultar paso 4 (Datos de Pago) si no hay membresía
-          if (index === 3 && membresia === 'ninguna') return null;
-          return (
-            <Step key={label}>
-              <StepLabel sx={{
-                '& .MuiStepLabel-label': { fontSize: '0.75rem', letterSpacing: '0.05em' }
-              }}>
-                {label}
-              </StepLabel>
-            </Step>
-          );
-        })}
+        {pasos.map((label, index) => (
+          <Step key={label}>
+            <StepLabel sx={{
+              '& .MuiStepLabel-label': { fontSize: '0.75rem', letterSpacing: '0.05em' }
+            }}>
+              {label}
+            </StepLabel>
+          </Step>
+        ))}
       </Stepper>
 
       {/* Paso 1: Información Personal */}
@@ -317,23 +308,6 @@ const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
             </FormLabel>
             <RadioGroup value={membresia} onChange={(e) => setMembresia(e.target.value)}>
               <Box className="space-y-3">
-                <Box className="border p-4 hover:border-black transition-colors cursor-pointer" onClick={() => setMembresia('ninguna')}>
-                  <FormControlLabel 
-                    value="ninguna" 
-                    control={<Radio sx={{ color: '#666', '&.Mui-checked': { color: '#000' } }} />} 
-                    label={
-                      <Box>
-                        <Typography sx={{ fontSize: '0.875rem', letterSpacing: '0.05em', fontWeight: 500 }}>
-                          Sin Membresía
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-600">
-                          Acceso básico al catálogo
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </Box>
-
                 <Box className="border p-4 hover:border-black transition-colors cursor-pointer" onClick={() => setMembresia('basica')}>
                   <FormControlLabel 
                     value="basica" 
@@ -345,23 +319,6 @@ const RegistroForm = ({ onSubmit, cargando: cargandoPadre }) => {
                         </Typography>
                         <Typography variant="caption" className="text-gray-600">
                           Código de seguridad + Beneficios exclusivos
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </Box>
-
-                <Box className="border p-4 hover:border-black transition-colors cursor-pointer" onClick={() => setMembresia('premium')}>
-                  <FormControlLabel 
-                    value="premium" 
-                    control={<Radio sx={{ color: '#666', '&.Mui-checked': { color: '#000' } }} />} 
-                    label={
-                      <Box>
-                        <Typography sx={{ fontSize: '0.875rem', letterSpacing: '0.05em', fontWeight: 500 }}>
-                          Membresía Premium - $10 USD
-                        </Typography>
-                        <Typography variant="caption" className="text-gray-600">
-                          Todos los beneficios + Acceso prioritario
                         </Typography>
                       </Box>
                     }
