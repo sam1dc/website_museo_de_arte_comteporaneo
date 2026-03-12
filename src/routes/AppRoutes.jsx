@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 import PublicLayout from '../layouts/PublicLayout';
@@ -21,10 +22,20 @@ import ConfirmacionCompraView from '../views/ConfirmacionCompraView';
 import MisComprasView from '../views/MisComprasView';
 
 const AppRoutes = () => {
+  const { user } = useAuth();
+
+  // Componente para redirección inteligente
+  const HomeRedirect = () => {
+    if (user && (user.tipo === 'admin' || user.tipo === 'empleado')) {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/museo-de-arte-contemporaneo" replace />;
+  };
+
   return (
     <Routes>
       {/* Redirección por defecto */}
-      <Route path="/" element={<Navigate to="/museo-de-arte-contemporaneo" replace />} />
+      <Route path="/" element={<HomeRedirect />} />
 
       {/* Login Unificado */}
       <Route path="/login" element={<LoginView />} />
