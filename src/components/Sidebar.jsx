@@ -7,15 +7,15 @@ const Sidebar = ({ mobileOpen, onMobileClose }) => {
   const location = useLocation();
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { id: 'usuarios', label: 'Usuarios', icon: <PersonIcon />, path: '/usuarios' },
-    { id: 'generos', label: 'Géneros', icon: <CategoryIcon />, path: '/generos' },
-    { id: 'artistas', label: 'Artistas', icon: <PaletteIcon />, path: '/artistas' },
-    { id: 'obras', label: 'Obras', icon: <ImageIcon />, path: '/obras' },
-    { id: 'compradores', label: 'Compradores', icon: <ShoppingCartIcon />, path: '/compradores' },
-    { id: 'solicitudes', label: 'Solicitudes Compra', icon: <RequestQuoteIcon />, path: '/solicitudes-compra' },
-    { id: 'facturacion', label: 'Facturación', icon: <ReceiptIcon />, path: '/facturacion' },
-    { id: 'reportes', label: 'Reportes', icon: <AssessmentIcon />, path: '/reportes' }
+    { id: 'dashboard', label: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
+    { id: 'usuarios', label: 'Usuarios', icon: <PersonIcon />, path: '/admin/usuarios' },
+    { id: 'generos', label: 'Géneros', icon: <CategoryIcon />, path: '/admin/generos' },
+    { id: 'artistas', label: 'Artistas', icon: <PaletteIcon />, path: '/admin/artistas' },
+    { id: 'obras', label: 'Obras', icon: <ImageIcon />, path: '/admin/obras' },
+    { id: 'compradores', label: 'Compradores', icon: <ShoppingCartIcon />, path: '/admin/compradores' },
+    { id: 'solicitudes', label: 'Solicitudes Compra', icon: <RequestQuoteIcon />, path: '/admin/solicitudes-compra' },
+    { id: 'facturacion', label: 'Facturación', icon: <ReceiptIcon />, path: '/admin/facturacion' },
+    { id: 'reportes', label: 'Reportes', icon: <AssessmentIcon />, path: '/admin/reportes' }
   ];
 
   const handleMenuClick = (path) => {

@@ -21,17 +21,17 @@ import CheckoutView from '../views/CheckoutView';
 import ConfirmacionCompraView from '../views/ConfirmacionCompraView';
 import MisComprasView from '../views/MisComprasView';
 
-const AppRoutes = () => {
+// Componente para redirección inteligente
+const HomeRedirect = () => {
   const { user } = useAuth();
+  
+  if (user && (user.tipo === 'admin' || user.tipo === 'empleado')) {
+    return <Navigate to="/admin" replace />;
+  }
+  return <Navigate to="/museo-de-arte-contemporaneo" replace />;
+};
 
-  // Componente para redirección inteligente
-  const HomeRedirect = () => {
-    if (user && (user.tipo === 'admin' || user.tipo === 'empleado')) {
-      return <Navigate to="/admin" replace />;
-    }
-    return <Navigate to="/museo-de-arte-contemporaneo" replace />;
-  };
-
+const AppRoutes = () => {
   return (
     <Routes>
       {/* Redirección por defecto */}

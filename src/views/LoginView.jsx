@@ -29,7 +29,7 @@ const LoginView = () => {
       
       // Redirigir según el tipo de usuario
       if (response.tipo === 'admin' || response.tipo === 'empleado') {
-        navigate('/');
+        navigate('/admin');
       } else {
         navigate('/museo-de-arte-contemporaneo');
       }
