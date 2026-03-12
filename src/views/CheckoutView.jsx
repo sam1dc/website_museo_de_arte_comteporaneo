@@ -118,6 +118,8 @@ const CheckoutView = () => {
         state: { 
           obra, 
           total, 
+          subtotal,
+          iva,
           comisionMuseo, 
           precioBase, 
           solicitud: response 
@@ -174,7 +176,9 @@ const CheckoutView = () => {
 
   const precioBase = parseFloat(obra.precio_usd || 0);
   const comisionMuseo = precioBase * (obra.artista?.porcentaje_comision || 0.07);
-  const total = precioBase + comisionMuseo;
+  const subtotal = precioBase + comisionMuseo;
+  const iva = subtotal * 0.13; // IVA 13%
+  const total = subtotal + iva;
 
   const inputStyles = {
     '& .MuiInput-underline:before': { borderBottomColor: '#e5e5e5' },
@@ -465,12 +469,28 @@ const CheckoutView = () => {
                   ${precioBase.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              <Box className="flex justify-between mb-4 pb-4 border-b border-gray-200">
+              <Box className="flex justify-between mb-2">
                 <Typography className="text-gray-600 font-light text-sm">
                   Comisión Museo ({((obra.artista?.porcentaje_comision || 0.07) * 100).toFixed(0)}%)
                 </Typography>
                 <Typography className="font-light text-sm">
                   ${comisionMuseo.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
+              </Box>
+              <Box className="flex justify-between mb-2 pb-2 border-b border-gray-200">
+                <Typography className="text-gray-600 font-light text-sm">
+                  Subtotal
+                </Typography>
+                <Typography className="font-light text-sm">
+                  ${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
+              </Box>
+              <Box className="flex justify-between mb-4 pb-4 border-b border-gray-200">
+                <Typography className="text-gray-600 font-light text-sm">
+                  IVA (13%)
+                </Typography>
+                <Typography className="font-light text-sm">
+                  ${iva.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
               <Box className="flex justify-between">
@@ -481,12 +501,6 @@ const CheckoutView = () => {
                   ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Typography>
               </Box>
-              <Typography 
-                className="text-gray-500 font-light mt-2"
-                sx={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}
-              >
-                *IVA será calculado en la factura
-              </Typography>
             </Box>
 
             <Button
