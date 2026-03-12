@@ -57,7 +57,7 @@ const Navbar = ({ onMenuClick }) => {
                 {user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres}
               </Typography>
               <Typography variant="caption" className="text-gray-500 uppercase tracking-wide">
-                {user?.tipo === 'admin' ? 'Administrador' : 'Empleado'}
+                {user?.data?.rol || (user?.tipo === 'admin' ? 'Administrador' : 'Empleado')}
               </Typography>
             </Box>
             <IconButton onClick={handleMenu}>

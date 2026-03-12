@@ -182,7 +182,7 @@ const UsuariosContent = () => {
                 <TableCell>
                   <Typography className="font-medium">{usuario.nombre_completo}</Typography>
                 </TableCell>
-                <TableCell>{usuario.rol}</TableCell>
+                <TableCell>{usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}</TableCell>
                 <TableCell>
                   <Chip 
                     label={usuario.estado} 
@@ -221,7 +221,7 @@ const UsuariosContent = () => {
                 <Typography className="font-medium text-lg">{usuario.nombre_completo}</Typography>
                 <Typography variant="body2" className="text-gray-600">{usuario.email}</Typography>
                 <Typography variant="body2" className="text-gray-600 mt-1">
-                  <span className="font-medium">Rol:</span> {usuario.rol}
+                  <span className="font-medium">Rol:</span> {usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}
                 </Typography>
                 <Typography variant="body2" className="text-gray-600">
                   <span className="font-medium">Tel:</span> {usuario.telefono}
