@@ -47,8 +47,9 @@ const DashboardContent = () => {
     return meses;
   };
 
-  const procesarVentasPorMes = (facturas) => {
-    const mesesRango = generarMesesDelRango(fechaInicio, fechaFin);
+  const procesarVentasPorMes = (facturas, inicio, fin) => {
+    console.log('Procesando ventas por mes:', { facturas, inicio, fin });
+    const mesesRango = generarMesesDelRango(inicio, fin);
     const ventasPorMes = {};
     
     // Inicializar todos los meses en 0
@@ -74,13 +75,17 @@ const DashboardContent = () => {
       }
     });
 
-    return Object.values(ventasPorMes)
+    const resultado = Object.values(ventasPorMes)
       .sort((a, b) => a.orden - b.orden)
       .map(({ mes, ventas, ingresos }) => ({ mes, ventas, ingresos }));
+    
+    console.log('Resultado ventas por mes:', resultado);
+    return resultado;
   };
 
-  const procesarComprasPorMes = (obrasVendidas) => {
-    const mesesRango = generarMesesDelRango(fechaInicio, fechaFin);
+  const procesarComprasPorMes = (obrasVendidas, inicio, fin) => {
+    console.log('Procesando compras por mes:', { obrasVendidas, inicio, fin });
+    const mesesRango = generarMesesDelRango(inicio, fin);
     const comprasPorMes = {};
     
     // Inicializar todos los meses en 0
@@ -104,9 +109,12 @@ const DashboardContent = () => {
       }
     });
 
-    return Object.values(comprasPorMes)
+    const resultado = Object.values(comprasPorMes)
       .sort((a, b) => a.orden - b.orden)
       .map(({ mes, cantidad }) => ({ mes, cantidad }));
+    
+    console.log('Resultado compras por mes:', resultado);
+    return resultado;
   };
 
   const procesarTopArtistas = (obrasVendidas) => {
@@ -129,77 +137,21 @@ const DashboardContent = () => {
 
   useEffect(() => {
     const inicializar = async () => {
+      setCargando(true);
       const fechas = obtenerFechasIniciales();
+      console.log('Fechas iniciales:', fechas);
       setFechaInicio(fechas.inicio);
       setFechaFin(fechas.fin);
       
-      // Cargar datos iniciales
-      try {
-        setCargando(true);
-        
-        const dashboardData = await dashboardService.obtenerResumen();
-        const obrasData = await obrasAdminService.obtenerTodos();
-        
-        const rangoFechas = {
-          fecha_inicio: fechas.inicio,
-          fecha_fin: fechas.fin
-        };
-
-        const [facturacionRes, obrasVendidasRes] = await Promise.all([
-          reportesAdminService.facturacion(rangoFechas),
-          reportesAdminService.obrasVendidas(rangoFechas)
-        ]);
-
-        console.log('Respuestas de la API:', { facturacionRes, obrasVendidasRes });
-
-        // Contar obras disponibles correctamente
-        const obrasDisponibles = obrasData.filter(obra => obra.estatus === 'DISPONIBLE').length;
-        
-        setStats({
-          compradores: dashboardData.usuarios_count || 0,
-          obras: dashboardData.obras_count || 0,
-          obrasDisponibles: obrasDisponibles
-        });
-
-        // Manejar diferentes estructuras de respuesta
-        const facturacionData = facturacionRes?.data || facturacionRes || [];
-        const obrasVendidasData = obrasVendidasRes?.data || obrasVendidasRes || [];
-
-        const ventasPorMes = procesarVentasPorMes(facturacionData);
-        const topArtistas = procesarTopArtistas(obrasVendidasData);
-        const comprasPorMes = procesarComprasPorMes(obrasVendidasData);
-
-        console.log('Datos procesados:', {
-          facturacionData,
-          obrasVendidasData,
-          comprasPorMes,
-          topArtistas
-        });
-
-        setReportes({
-          ventasPorMes,
-          comprasPorMes,
-          topArtistas: topArtistas.length > 0 ? topArtistas : [
-            { nombre: 'Sin ventas', ventas: 0 }
-          ]
-        });
-      } catch (error) {
-        console.error('Error al cargar dashboard:', error);
-        setStats({ compradores: 0, obras: 0 });
-        setReportes({
-          ventasPorMes: [],
-          comprasPorMes: [],
-          topArtistas: []
-        });
-      } finally {
-        setCargando(false);
-      }
+      // Cargar datos iniciales con las fechas por defecto
+      await cargarDatosConFechas(fechas.inicio, fechas.fin);
+      setCargando(false);
     };
 
     inicializar();
   }, []);
 
-  const cargarDatos = async () => {
+  const cargarDatosConFechas = async (inicio, fin) => {
     try {
       setCargandoGraficas(true);
       
@@ -207,14 +159,16 @@ const DashboardContent = () => {
       const obrasData = await obrasAdminService.obtenerTodos();
       
       const rangoFechas = {
-        fecha_inicio: fechaInicio,
-        fecha_fin: fechaFin
+        fecha_inicio: inicio,
+        fecha_fin: fin
       };
 
       const [facturacionRes, obrasVendidasRes] = await Promise.all([
         reportesAdminService.facturacion(rangoFechas),
         reportesAdminService.obrasVendidas(rangoFechas)
       ]);
+
+      console.log('Respuestas de la API:', { facturacionRes, obrasVendidasRes });
 
       // Contar obras disponibles correctamente
       const obrasDisponibles = obrasData.filter(obra => obra.estatus === 'DISPONIBLE').length;
@@ -229,9 +183,16 @@ const DashboardContent = () => {
       const facturacionData = facturacionRes?.data || facturacionRes || [];
       const obrasVendidasData = obrasVendidasRes?.data || obrasVendidasRes || [];
 
-      const ventasPorMes = procesarVentasPorMes(facturacionData);
+      const ventasPorMes = procesarVentasPorMes(facturacionData, inicio, fin);
       const topArtistas = procesarTopArtistas(obrasVendidasData);
-      const comprasPorMes = procesarComprasPorMes(obrasVendidasData);
+      const comprasPorMes = procesarComprasPorMes(obrasVendidasData, inicio, fin);
+
+      console.log('Datos procesados:', {
+        facturacionData,
+        obrasVendidasData,
+        comprasPorMes,
+        topArtistas
+      });
 
       setReportes({
         ventasPorMes,
@@ -242,7 +203,7 @@ const DashboardContent = () => {
       });
     } catch (error) {
       console.error('Error al cargar dashboard:', error);
-      setStats({ compradores: 0, obras: 0 });
+      setStats({ compradores: 0, obras: 0, obrasDisponibles: 0 });
       setReportes({
         ventasPorMes: [],
         comprasPorMes: [],
@@ -253,10 +214,12 @@ const DashboardContent = () => {
     }
   };
 
+  const cargarDatos = async () => {
+    await cargarDatosConFechas(fechaInicio, fechaFin);
+  };
+
   const handleBuscar = () => {
-    if (fechaInicio && fechaFin) {
-      cargarDatos();
-    }
+    cargarDatos();
   };
 
   if (cargando) {
