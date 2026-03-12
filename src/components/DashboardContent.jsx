@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Paper, CircularProgress, TextField, Button } from '@mui/material';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { dashboardService, reportesAdminService } from '../services/adminService';
+import { dashboardService, reportesAdminService, obrasAdminService } from '../services/adminService';
 import { Search as SearchIcon } from '@mui/icons-material';
 import { obtenerNombreMes } from '../utils/constants';
 
@@ -138,6 +138,7 @@ const DashboardContent = () => {
         setCargando(true);
         
         const dashboardData = await dashboardService.obtenerResumen();
+        const obrasData = await obrasAdminService.obtenerTodos();
         
         const rangoFechas = {
           fecha_inicio: fechas.inicio,
@@ -149,13 +150,13 @@ const DashboardContent = () => {
           reportesAdminService.obrasVendidas(rangoFechas)
         ]);
 
-        // Contar obras únicas vendidas
-        const obrasVendidasUnicas = new Set(obrasVendidasRes.data?.map(v => v.obra_id) || []).size;
+        // Contar obras disponibles correctamente
+        const obrasDisponibles = obrasData.filter(obra => obra.estatus === 'DISPONIBLE').length;
         
         setStats({
           compradores: dashboardData.usuarios_count || 0,
           obras: dashboardData.obras_count || 0,
-          obrasDisponibles: (dashboardData.obras_count || 0) - obrasVendidasUnicas
+          obrasDisponibles: obrasDisponibles
         });
 
         const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
@@ -190,6 +191,7 @@ const DashboardContent = () => {
       setCargandoGraficas(true);
       
       const dashboardData = await dashboardService.obtenerResumen();
+      const obrasData = await obrasAdminService.obtenerTodos();
       
       const rangoFechas = {
         fecha_inicio: fechaInicio,
@@ -201,13 +203,13 @@ const DashboardContent = () => {
         reportesAdminService.obrasVendidas(rangoFechas)
       ]);
 
-      // Contar obras únicas vendidas
-      const obrasVendidasUnicas = new Set(obrasVendidasRes.data?.map(v => v.obra_id) || []).size;
+      // Contar obras disponibles correctamente
+      const obrasDisponibles = obrasData.filter(obra => obra.estatus === 'DISPONIBLE').length;
       
       setStats({
         compradores: dashboardData.usuarios_count || 0,
         obras: dashboardData.obras_count || 0,
-        obrasDisponibles: (dashboardData.obras_count || 0) - obrasVendidasUnicas
+        obrasDisponibles: obrasDisponibles
       });
 
       const ventasPorMes = procesarVentasPorMes(facturacionRes.data || []);
