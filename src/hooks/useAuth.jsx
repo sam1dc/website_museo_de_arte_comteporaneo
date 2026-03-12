@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../services';
+import { tienePermiso, esAdmin, esComprador } from '../utils/permissions';
 
 const AuthContext = createContext();
 
@@ -71,7 +72,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      setUser, 
+      login, 
+      logout, 
+      loading,
+      tienePermiso: (permiso) => tienePermiso(user, permiso),
+      esAdmin: () => esAdmin(user),
+      esComprador: () => esComprador(user)
+    }}>
       {children}
     </AuthContext.Provider>
   );

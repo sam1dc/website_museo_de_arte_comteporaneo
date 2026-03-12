@@ -42,7 +42,7 @@ const AppRoutes = () => {
 
       {/* Panel Administrativo */}
       <Route path="/admin" element={
-        <ProtectedRoute>
+        <ProtectedRoute requireAdmin={true}>
           <MainLayout />
         </ProtectedRoute>
       }>

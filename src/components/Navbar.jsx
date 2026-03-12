@@ -52,9 +52,14 @@ const Navbar = ({ onMenuClick }) => {
           </Typography>
           
           <Box className="flex items-center gap-2 sm:gap-3">
-            <Typography variant="body2" className="text-gray-700 hidden sm:block">
-              {user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres}
-            </Typography>
+            <Box className="text-right hidden sm:block">
+              <Typography variant="body2" className="text-gray-700 font-medium">
+                {user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres}
+              </Typography>
+              <Typography variant="caption" className="text-gray-500 uppercase tracking-wide">
+                {user?.tipo === 'admin' ? 'Administrador' : 'Empleado'}
+              </Typography>
+            </Box>
             <IconButton onClick={handleMenu}>
               <Avatar sx={{ width: 32, height: 32, backgroundColor: '#000' }}>
                 {(user?.data?.nombre || user?.data?.nombre_completo || user?.data?.nombres)?.charAt(0)}

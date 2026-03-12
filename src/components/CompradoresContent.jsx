@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Chip, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Tooltip } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Security as SecurityIcon } from '@mui/icons-material';
 import { compradoresAdminService } from '../services';
+import { useAuth } from '../hooks/useAuth';
+import { PERMISOS } from '../utils/permissions';
+import ProtectedAction from './ProtectedAction';
 
 const CompradoresContent = () => {
   const [compradores, setCompradores] = useState([]);
@@ -283,11 +286,13 @@ const CompradoresContent = () => {
                       <SecurityIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Eliminar">
-                    <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <ProtectedAction permiso={PERMISOS.GESTIONAR_COMPRADORES}>
+                    <Tooltip title="Eliminar">
+                      <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </ProtectedAction>
                 </TableCell>
               </TableRow>
             ))}
@@ -305,9 +310,11 @@ const CompradoresContent = () => {
                 <IconButton size="small" onClick={() => handleOpen(comprador)}>
                   <EditIcon fontSize="small" />
                 </IconButton>
-                <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
+                <ProtectedAction permiso={PERMISOS.GESTIONAR_COMPRADORES}>
+                  <IconButton size="small" onClick={() => handleDelete(comprador.comprador_id)}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </ProtectedAction>
               </Box>
             </Box>
             <Box className="space-y-1">

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Chip, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { Visibility as VisibilityIcon, Close as CloseIcon } from '@mui/icons-material';
 import { facturasAdminService } from '../services';
+import { useAuth } from '../hooks/useAuth';
+import { PERMISOS } from '../utils/permissions';
 
 const FacturacionContent = () => {
   const [facturas, setFacturas] = useState([]);

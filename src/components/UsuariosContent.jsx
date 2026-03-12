@@ -2,8 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Lock as LockIcon } from '@mui/icons-material';
 import { usuariosAdminService } from '../services';
+import { useAuth } from '../hooks/useAuth';
+import { PERMISOS } from '../utils/permissions';
+import ProtectedAction from './ProtectedAction';
 
 const UsuariosContent = () => {
+  const { tienePermiso } = useAuth();
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -301,8 +305,11 @@ const UsuariosContent = () => {
                 value={currentUsuario.rol}
                 onChange={(e) => handleChange('rol', e.target.value)}
                 label="Rol"
+                disabled={currentUsuario.rol === 'Administrador' && !tienePermiso(PERMISOS.CREAR_ADMINS)}
               >
-                <MenuItem value="Administrador">Administrador</MenuItem>
+                <MenuItem value="Administrador" disabled={!tienePermiso(PERMISOS.CREAR_ADMINS)}>
+                  Administrador {!tienePermiso(PERMISOS.CREAR_ADMINS) && '(Solo Admin)'}
+                </MenuItem>
                 <MenuItem value="Empleado">Empleado</MenuItem>
               </Select>
             </FormControl>
