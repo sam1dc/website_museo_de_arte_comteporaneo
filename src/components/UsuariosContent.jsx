@@ -2,15 +2,29 @@ import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Lock as LockIcon } from '@mui/icons-material';
 import { usuariosAdminService } from '../services';
-import { useAuth } from '../hooks/useAuth';
 import { PERMISOS } from '../utils/permissions';
 import ProtectedAction from './ProtectedAction';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { useConfirmDelete } from '../hooks/useConfirmDelete';
 
 const UsuariosContent = () => {
-  const { tienePermiso } = useAuth();
   const { deleteDialog, confirmDelete, handleConfirm, handleClose: handleDeleteClose } = useConfirmDelete();
+
+  const getLoggedUserRol = () => {
+    try {
+      const adminAuthStr = localStorage.getItem('adminAuth');
+      if (adminAuthStr) {
+        const adminAuth = JSON.parse(adminAuthStr);
+        return adminAuth?.data?.rol;
+      }
+    } catch (e) {
+      console.error('Error al parsear adminAuth de localStorage:', e);
+    }
+    return null;
+  };
+
+  const loggedUserRol = getLoggedUserRol();
+  const esUsuarioAdmin = loggedUserRol === 'Administrador';
   const [usuarios, setUsuarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -172,97 +186,97 @@ const UsuariosContent = () => {
           <CircularProgress />
         </Box>
       ) : (
-      <>
-      {/* Vista Desktop */}
-      <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
-        <Table sx={{ width: '100%' }}>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: '#fafafa' }}>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nombre Completo</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Rol</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Estado</TableCell>
-              <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Teléfono</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {usuarios.map((usuario) => (
-              <TableRow key={usuario.empleado_id} hover>
-                <TableCell>
-                  <Typography className="font-medium">{usuario.nombre_completo}</Typography>
-                </TableCell>
-                <TableCell>{usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={usuario.estado} 
-                    size="small"
-                    sx={{ 
-                      backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
-                      color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
-                      borderRadius: 0,
-                      textTransform: 'uppercase',
-                      fontSize: '0.7rem',
-                      letterSpacing: '0.05em'
-                    }}
-                  />
-                </TableCell>
-                <TableCell>{usuario.telefono}</TableCell>
-                <TableCell align="right">
-                  <IconButton size="small" onClick={() => handleOpen(usuario)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        <>
+          {/* Vista Desktop */}
+          <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
+            <Table sx={{ width: '100%' }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#fafafa' }}>
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Nombre Completo</TableCell>
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Rol</TableCell>
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Estado</TableCell>
+                  <TableCell sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Teléfono</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 500, letterSpacing: '0.05em' }}>Acciones</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {usuarios.map((usuario) => (
+                  <TableRow key={usuario.empleado_id} hover>
+                    <TableCell>
+                      <Typography className="font-medium">{usuario.nombre_completo}</Typography>
+                    </TableCell>
+                    <TableCell>{usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={usuario.estado}
+                        size="small"
+                        sx={{
+                          backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
+                          color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
+                          borderRadius: 0,
+                          textTransform: 'uppercase',
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.05em'
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>{usuario.telefono}</TableCell>
+                    <TableCell align="right">
+                      <IconButton size="small" onClick={() => handleOpen(usuario)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      {/* Vista Mobile */}
-      <Box className="block md:hidden space-y-4">
-        {usuarios.map((usuario) => (
-          <Paper key={usuario.empleado_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
-            <Box className="flex justify-between items-start mb-3">
-              <Box>
-                <Typography className="font-medium text-lg">{usuario.nombre_completo}</Typography>
-                <Typography variant="body2" className="text-gray-600">{usuario.email}</Typography>
-                <Typography variant="body2" className="text-gray-600 mt-1">
-                  <span className="font-medium">Rol:</span> {usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}
-                </Typography>
-                <Typography variant="body2" className="text-gray-600">
-                  <span className="font-medium">Tel:</span> {usuario.telefono}
-                </Typography>
-                <Box className="mt-2">
-                  <Chip 
-                    label={usuario.estado} 
-                    size="small"
-                    sx={{ 
-                      backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
-                      color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
-                      borderRadius: 0,
-                      textTransform: 'uppercase',
-                      fontSize: '0.7rem',
-                      letterSpacing: '0.05em'
-                    }}
-                  />
+          {/* Vista Mobile */}
+          <Box className="block md:hidden space-y-4">
+            {usuarios.map((usuario) => (
+              <Paper key={usuario.empleado_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
+                <Box className="flex justify-between items-start mb-3">
+                  <Box>
+                    <Typography className="font-medium text-lg">{usuario.nombre_completo}</Typography>
+                    <Typography variant="body2" className="text-gray-600">{usuario.email}</Typography>
+                    <Typography variant="body2" className="text-gray-600 mt-1">
+                      <span className="font-medium">Rol:</span> {usuario.rol?.toLowerCase() === 'staff' ? 'Empleado' : usuario.rol}
+                    </Typography>
+                    <Typography variant="body2" className="text-gray-600">
+                      <span className="font-medium">Tel:</span> {usuario.telefono}
+                    </Typography>
+                    <Box className="mt-2">
+                      <Chip
+                        label={usuario.estado}
+                        size="small"
+                        sx={{
+                          backgroundColor: usuario.estado === 'activo' ? '#e8f5e9' : '#ffebee',
+                          color: usuario.estado === 'activo' ? '#2e7d32' : '#c62828',
+                          borderRadius: 0,
+                          textTransform: 'uppercase',
+                          fontSize: '0.7rem',
+                          letterSpacing: '0.05em'
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box>
+                    <IconButton size="small" onClick={() => handleOpen(usuario)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
                 </Box>
-              </Box>
-              <Box>
-                <IconButton size="small" onClick={() => handleOpen(usuario)}>
-                  <EditIcon fontSize="small" />
-                </IconButton>
-                <IconButton size="small" onClick={() => handleDelete(usuario.empleado_id)}>
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-          </Paper>
-        ))}
-      </Box>
-      </>
+              </Paper>
+            ))}
+          </Box>
+        </>
       )}
 
       {/* Dialog */}
@@ -314,10 +328,10 @@ const UsuariosContent = () => {
                 value={currentUsuario.rol}
                 onChange={(e) => handleChange('rol', e.target.value)}
                 label="Rol"
-                disabled={currentUsuario.rol === 'Administrador' && !tienePermiso(PERMISOS.CREAR_ADMINS)}
+                disabled={!esUsuarioAdmin}
               >
-                <MenuItem value="Administrador" disabled={!tienePermiso(PERMISOS.CREAR_ADMINS)}>
-                  Administrador {!tienePermiso(PERMISOS.CREAR_ADMINS) && '(Solo Admin)'}
+                <MenuItem value="Administrador" disabled={!esUsuarioAdmin}>
+                  Administrador {!esUsuarioAdmin && '(Solo Admin)'}
                 </MenuItem>
                 <MenuItem value="Empleado">Empleado</MenuItem>
               </Select>
