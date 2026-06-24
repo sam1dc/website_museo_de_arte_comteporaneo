@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, Grid, Button, TextField, Paper, CircularProgress, Alert } from '@mui/material';
 import { useState, useEffect, useRef } from 'react';
-import { catalogoService, compraService } from '../services';
+import { catalogoService, compraService, recomendacionService } from '../services';
 
 const CheckoutView = () => {
   const { id } = useParams();
@@ -113,6 +113,16 @@ const CheckoutView = () => {
       };
 
       const response = await compraService.crearSolicitud(solicitud);
+      
+      // Registrar la compra en el grafo de Neo4j para alimentar el sistema de recomendaciones
+      try {
+        await recomendacionService.registrarCompra({
+          comprador_id: String(solicitud.comprador_id),
+          obra_id: String(solicitud.obra_id)
+        });
+      } catch (graphErr) {
+        console.error('Error al registrar la compra en el grafo de recomendaciones:', graphErr);
+      }
       
       navigate('/museo-de-arte-contemporaneo/confirmacion', {
         state: { 

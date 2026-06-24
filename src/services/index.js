@@ -3,6 +3,7 @@ export { catalogoService } from './catalogoService';
 export { artistaService } from './artistaService';
 export { compraService } from './compraService';
 export { authService } from './authService';
+export { recomendacionService } from './recomendacionService';
 export {
   dashboardService,
   usuariosAdminService,
