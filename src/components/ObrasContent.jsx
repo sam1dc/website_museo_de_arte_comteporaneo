@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Avatar, Tooltip } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon, Visibility as VisibilityIcon, History as HistoryIcon } from '@mui/icons-material';
 import { obrasAdminService, artistasAdminService, generosAdminService } from '../services';
 import { useAuth } from '../hooks/useAuth';
 import { PERMISOS } from '../utils/permissions';
@@ -23,42 +23,9 @@ const ObrasContent = () => {
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
   const [fotoModal, setFotoModal] = useState({ open: false, url: '', nombre: '' });
   const [detalleModal, setDetalleModal] = useState({ open: false, obra: null, loading: false });
+  const [auditoriaModal, setAuditoriaModal] = useState({ open: false, obra: null, registros: [], loading: false, error: null });
   const cargadoRef = useRef(false);
-  const [currentObra, setCurrentObra] = useState({
-    nombre: '',
-    artista_id: '',
-    genero_id: '',
-    precio_usd: '',
-    fecha_creacion: '',
-    estatus: 'DISPONIBLE',
-    descripcion: '',
-    foto_url: '',
-    tipo: '',
-    // Pintura
-    tecnica: '',
-    soporte: '',
-    alto_cm: '',
-    ancho_cm: '',
-    // Escultura
-    material: '',
-    peso_kg: '',
-    largo_cm: '',
-    profundidad_cm: '',
-    // Fotografía
-    camara: '',
-    lente: '',
-    tipo_impresion: '',
-    edicion: '',
-    // Orfebrería
-    metal_principal: '',
-    pureza: '',
-    piedras: '',
-    peso_gramos: '',
-    // Cerámica
-    tipo_pasta: '',
-    esmalte: '',
-    temperatura_coccion_c: ''
-  });
+  const [obraSeleccionada, setObraSeleccionada] = useState(null);
 
   const estatusOptions = ['DISPONIBLE', 'RESERVADA', 'VENDIDA'];
   const tipoOptions = [
@@ -96,125 +63,65 @@ const ObrasContent = () => {
     cargarDatos();
   }, []);
 
-  const handleOpen = async (obra = null) => {
+  const handleOpen = (obra = null) => {
     if (obra) {
-      // Abrir modal inmediatamente con datos básicos
-      setCurrentObra({
+      // Mapear detalles del subtipo para pasar al componente del modal
+      const obraMapeada = {
         ...obra,
+        // Ensure IDs are set for selects
+        artista_id: obra.artista_id || (obra.artista && obra.artista.artista_id) || '',
+        genero_id: obra.genero_id || (obra.genero && obra.genero.genero_id) || '',
         fecha_creacion: obra.fecha_creacion ? obra.fecha_creacion.split('T')[0] : '',
         tipo: obra.tipo || '',
-        tecnica: '',
-        soporte: '',
-        alto_cm: '',
-        ancho_cm: '',
-        material: '',
-        peso_kg: '',
-        largo_cm: '',
-        profundidad_cm: '',
-        camara: '',
-        lente: '',
-        tipo_impresion: '',
-        edicion: '',
-        metal_principal: '',
-        pureza: '',
-        piedras: '',
-        peso_gramos: '',
-        tipo_pasta: '',
-        esmalte: '',
-        temperatura_coccion_c: ''
-      });
+        tecnica: obra.pintura?.tecnica || '',
+        soporte: obra.pintura?.soporte || '',
+        alto_cm: obra.pintura?.alto_cm || obra.escultura?.alto_cm || obra.fotografia?.alto_cm || obra.ceramica?.alto_cm || '',
+        ancho_cm: obra.pintura?.ancho_cm || obra.escultura?.ancho_cm || obra.fotografia?.ancho_cm || obra.ceramica?.ancho_cm || '',
+        material: obra.escultura?.material || '',
+        peso_kg: obra.escultura?.peso_kg || '',
+        largo_cm: obra.escultura?.largo_cm || obra.ceramica?.largo_cm || '',
+        profundidad_cm: obra.escultura?.profundidad_cm || '',
+        camara: obra.fotografia?.camara || '',
+        lente: obra.fotografia?.lente || '',
+        tipo_impresion: obra.fotografia?.tipo_impresion || '',
+        edicion: obra.fotografia?.edicion || '',
+        metal_principal: obra.orfebreria?.metal_principal || '',
+        pureza: obra.orfebreria?.pureza || '',
+        piedras: obra.orfebreria?.piedras || '',
+        peso_gramos: obra.orfebreria?.peso_gramos || '',
+        tipo_pasta: obra.ceramica?.tipo_pasta || '',
+        esmalte: obra.ceramica?.esmalte || '',
+        temperatura_coccion_c: obra.ceramica?.temperatura_coccion_c || ''
+      };
+      setObraSeleccionada(obraMapeada);
       setEditMode(true);
       setOpen(true);
-      setCargandoDetalle(true);
-      
-      try {
-        // Cargar detalle completo con subtipos en segundo plano
-        const obraCompleta = await obrasAdminService.obtenerDetalle(obra.obra_id);
-        
-        setCurrentObra({
-          ...obraCompleta,
-          fecha_creacion: obraCompleta.fecha_creacion ? obraCompleta.fecha_creacion.split('T')[0] : '',
-          tipo: obraCompleta.tipo || '',
-          tecnica: obraCompleta.pintura?.tecnica || '',
-          soporte: obraCompleta.pintura?.soporte || '',
-          alto_cm: obraCompleta.pintura?.alto_cm || obraCompleta.escultura?.alto_cm || obraCompleta.fotografia?.alto_cm || obraCompleta.ceramica?.alto_cm || '',
-          ancho_cm: obraCompleta.pintura?.ancho_cm || obraCompleta.escultura?.ancho_cm || obraCompleta.fotografia?.ancho_cm || obraCompleta.ceramica?.ancho_cm || '',
-          material: obraCompleta.escultura?.material || '',
-          peso_kg: obraCompleta.escultura?.peso_kg || '',
-          largo_cm: obraCompleta.escultura?.largo_cm || obraCompleta.ceramica?.largo_cm || '',
-          profundidad_cm: obraCompleta.escultura?.profundidad_cm || '',
-          camara: obraCompleta.fotografia?.camara || '',
-          lente: obraCompleta.fotografia?.lente || '',
-          tipo_impresion: obraCompleta.fotografia?.tipo_impresion || '',
-          edicion: obraCompleta.fotografia?.edicion || '',
-          metal_principal: obraCompleta.orfebreria?.metal_principal || '',
-          pureza: obraCompleta.orfebreria?.pureza || '',
-          piedras: obraCompleta.orfebreria?.piedras || '',
-          peso_gramos: obraCompleta.orfebreria?.peso_gramos || '',
-          tipo_pasta: obraCompleta.ceramica?.tipo_pasta || '',
-          esmalte: obraCompleta.ceramica?.esmalte || '',
-          temperatura_coccion_c: obraCompleta.ceramica?.temperatura_coccion_c || ''
-        });
-      } catch (err) {
-        console.error('Error al cargar detalle:', err);
-      } finally {
-        setCargandoDetalle(false);
-      }
     } else {
-      setCurrentObra({
-        nombre: '',
-        artista_id: '',
-        genero_id: '',
-        precio_usd: '',
-        fecha_creacion: '',
-        estatus: 'DISPONIBLE',
-        descripcion: '',
-        foto_url: '',
-        tipo: '',
-        tecnica: '',
-        soporte: '',
-        alto_cm: '',
-        ancho_cm: '',
-        material: '',
-        peso_kg: '',
-        largo_cm: '',
-        profundidad_cm: '',
-        camara: '',
-        lente: '',
-        tipo_impresion: '',
-        edicion: '',
-        metal_principal: '',
-        pureza: '',
-        piedras: '',
-        peso_gramos: '',
-        tipo_pasta: '',
-        esmalte: '',
-        temperatura_coccion_c: ''
-      });
+      setObraSeleccionada(null);
       setEditMode(false);
       setOpen(true);
     }
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
-  };
+    setObraSeleccionada(null);
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async (datosAEnviar) => {
     try {
       setEnviando(true);
       setError(null);
 
-      // Preparar datos, convirtiendo strings vacíos a null
-      const datosAEnviar = {
-        ...currentObra,
-        tipo: currentObra.tipo || null
+      const payload = {
+        ...datosAEnviar,
+        tipo: datosAEnviar.tipo || null
       };
 
       if (editMode) {
-        await obrasAdminService.actualizar(currentObra.obra_id, datosAEnviar);
+        await obrasAdminService.actualizar(payload.obra_id, payload);
       } else {
-        await obrasAdminService.crear(datosAEnviar);
+        await obrasAdminService.crear(payload);
       }
       
       // Recargar todas las obras para obtener los datos completos del backend
@@ -228,7 +135,7 @@ const ObrasContent = () => {
     } finally {
       setEnviando(false);
     }
-  };
+  }, [editMode]);
 
   const handleDelete = async (id) => {
     const obra = obras.find(o => o.obra_id === id);
@@ -248,10 +155,6 @@ const ObrasContent = () => {
     });
   };
 
-  const handleChange = (field, value) => {
-    setCurrentObra({ ...currentObra, [field]: value });
-  };
-
   const handleVerDetalle = async (obra) => {
     // Abrir modal inmediatamente con loading
     setDetalleModal({ open: true, obra: null, loading: true });
@@ -262,6 +165,18 @@ const ObrasContent = () => {
     } catch (err) {
       console.error('Error al cargar detalle:', err);
       setDetalleModal({ open: true, obra, loading: false });
+    }
+  };
+
+  const handleVerAuditoria = async (obra) => {
+    setAuditoriaModal({ open: true, obra, registros: [], loading: true, error: null });
+    try {
+      const { reportesAdminService } = await import('../services');
+      const data = await reportesAdminService.obtenerAuditoriaObra(obra.obra_id);
+      setAuditoriaModal({ open: true, obra, registros: data, loading: false, error: null });
+    } catch (err) {
+      console.error('Error al cargar auditoría:', err);
+      setAuditoriaModal({ open: true, obra, registros: [], loading: false, error: 'No se pudo cargar el historial de cambios.' });
     }
   };
 
@@ -418,6 +333,11 @@ const ObrasContent = () => {
                   </TableCell>
                   {puedeEditarObras && (
                     <TableCell align="right">
+                      <Tooltip title="Historial de Auditoría (Cassandra)">
+                        <IconButton size="small" onClick={() => handleVerAuditoria(obra)}>
+                          <HistoryIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <ProtectedAction permiso={PERMISOS.EDITAR_OBRAS}>
                         <IconButton size="small" onClick={() => handleOpen(obra)}>
                           <EditIcon fontSize="small" />
@@ -462,6 +382,9 @@ const ObrasContent = () => {
                 </Box>
                 {puedeEditarObras && (
                   <Box>
+                    <IconButton size="small" onClick={() => handleVerAuditoria(obra)}>
+                      <HistoryIcon fontSize="small" />
+                    </IconButton>
                     <ProtectedAction permiso={PERMISOS.EDITAR_OBRAS}>
                       <IconButton size="small" onClick={() => handleOpen(obra)}>
                         <EditIcon fontSize="small" />
@@ -503,357 +426,17 @@ const ObrasContent = () => {
       )}
 
       {/* Dialog */}
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogTitle className="font-light tracking-wide">
-          {editMode ? 'Editar Obra' : 'Nueva Obra'}
-          {cargandoDetalle && <CircularProgress size={20} sx={{ ml: 2 }} />}
-        </DialogTitle>
-        <DialogContent>
-          <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-            <TextField
-              label="Nombre de la Obra"
-              value={currentObra.nombre}
-              onChange={(e) => handleChange('nombre', e.target.value)}
-              fullWidth
-              variant="standard"
-              className="md:col-span-2"
-            />
-            <FormControl fullWidth variant="standard">
-              <InputLabel>Artista</InputLabel>
-              <Select
-                value={currentObra.artista_id}
-                onChange={(e) => handleChange('artista_id', e.target.value)}
-                label="Artista"
-              >
-                {artistas.map((artista) => (
-                  <MenuItem key={artista.artista_id} value={artista.artista_id}>
-                    {artista.nombre_completo}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth variant="standard">
-              <InputLabel>Género</InputLabel>
-              <Select
-                value={currentObra.genero_id}
-                onChange={(e) => handleChange('genero_id', e.target.value)}
-                label="Género"
-              >
-                {generos.map((genero) => (
-                  <MenuItem key={genero.genero_id} value={genero.genero_id}>
-                    {genero.nombre}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              label="Precio (USD)"
-              type="number"
-              value={currentObra.precio_usd}
-              onChange={(e) => handleChange('precio_usd', e.target.value)}
-              fullWidth
-              variant="standard"
-            />
-            <TextField
-              label="Fecha de Creación"
-              type="date"
-              value={currentObra.fecha_creacion}
-              onChange={(e) => handleChange('fecha_creacion', e.target.value)}
-              fullWidth
-              variant="standard"
-              InputLabelProps={{ shrink: true }}
-            />
-            <FormControl fullWidth variant="standard">
-              <InputLabel>Estatus</InputLabel>
-              <Select
-                value={currentObra.estatus}
-                onChange={(e) => handleChange('estatus', e.target.value)}
-                label="Estatus"
-              >
-                {estatusOptions.map((estatus) => (
-                  <MenuItem key={estatus} value={estatus}>
-                    {estatus}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth variant="standard">
-              <InputLabel>Tipo de Obra</InputLabel>
-              <Select
-                value={currentObra.tipo || ''}
-                onChange={(e) => handleChange('tipo', e.target.value)}
-                label="Tipo de Obra"
-              >
-                {tipoOptions.map((tipo) => (
-                  <MenuItem key={tipo.value} value={tipo.value}>
-                    {tipo.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            {/* Campos específicos por tipo - justo después del tipo */}
-            {!cargandoDetalle && currentObra.tipo === 'pintura' && (
-              <>
-                <TextField
-                  label="Técnica"
-                  value={currentObra.tecnica}
-                  onChange={(e) => handleChange('tecnica', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Soporte"
-                  value={currentObra.soporte}
-                  onChange={(e) => handleChange('soporte', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Alto (cm)"
-                  type="number"
-                  value={currentObra.alto_cm}
-                  onChange={(e) => handleChange('alto_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Ancho (cm)"
-                  type="number"
-                  value={currentObra.ancho_cm}
-                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-              </>
-            )}
-
-            {!cargandoDetalle && currentObra.tipo === 'escultura' && (
-              <>
-                <TextField
-                  label="Material"
-                  value={currentObra.material}
-                  onChange={(e) => handleChange('material', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Peso (kg)"
-                  type="number"
-                  value={currentObra.peso_kg}
-                  onChange={(e) => handleChange('peso_kg', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Alto (cm)"
-                  type="number"
-                  value={currentObra.alto_cm}
-                  onChange={(e) => handleChange('alto_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Ancho (cm)"
-                  type="number"
-                  value={currentObra.ancho_cm}
-                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Largo (cm)"
-                  type="number"
-                  value={currentObra.largo_cm}
-                  onChange={(e) => handleChange('largo_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Profundidad (cm)"
-                  type="number"
-                  value={currentObra.profundidad_cm}
-                  onChange={(e) => handleChange('profundidad_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-              </>
-            )}
-
-            {!cargandoDetalle && currentObra.tipo === 'fotografia' && (
-              <>
-                <TextField
-                  label="Cámara"
-                  value={currentObra.camara}
-                  onChange={(e) => handleChange('camara', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Lente"
-                  value={currentObra.lente}
-                  onChange={(e) => handleChange('lente', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Tipo de Impresión"
-                  value={currentObra.tipo_impresion}
-                  onChange={(e) => handleChange('tipo_impresion', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Edición"
-                  value={currentObra.edicion}
-                  onChange={(e) => handleChange('edicion', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Alto (cm)"
-                  type="number"
-                  value={currentObra.alto_cm}
-                  onChange={(e) => handleChange('alto_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Ancho (cm)"
-                  type="number"
-                  value={currentObra.ancho_cm}
-                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-              </>
-            )}
-
-            {!cargandoDetalle && currentObra.tipo === 'orfebreria' && (
-              <>
-                <TextField
-                  label="Metal Principal"
-                  value={currentObra.metal_principal}
-                  onChange={(e) => handleChange('metal_principal', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Pureza"
-                  value={currentObra.pureza}
-                  onChange={(e) => handleChange('pureza', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Piedras"
-                  value={currentObra.piedras}
-                  onChange={(e) => handleChange('piedras', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                  className="md:col-span-2"
-                />
-                <TextField
-                  label="Peso (gramos)"
-                  type="number"
-                  value={currentObra.peso_gramos}
-                  onChange={(e) => handleChange('peso_gramos', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-              </>
-            )}
-
-            {!cargandoDetalle && currentObra.tipo === 'ceramica' && (
-              <>
-                <TextField
-                  label="Tipo de Pasta"
-                  value={currentObra.tipo_pasta}
-                  onChange={(e) => handleChange('tipo_pasta', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Esmalte"
-                  value={currentObra.esmalte}
-                  onChange={(e) => handleChange('esmalte', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Temperatura de Cocción (°C)"
-                  type="number"
-                  value={currentObra.temperatura_coccion_c}
-                  onChange={(e) => handleChange('temperatura_coccion_c', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Alto (cm)"
-                  type="number"
-                  value={currentObra.alto_cm}
-                  onChange={(e) => handleChange('alto_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Ancho (cm)"
-                  type="number"
-                  value={currentObra.ancho_cm}
-                  onChange={(e) => handleChange('ancho_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-                <TextField
-                  label="Largo (cm)"
-                  type="number"
-                  value={currentObra.largo_cm}
-                  onChange={(e) => handleChange('largo_cm', e.target.value)}
-                  fullWidth
-                  variant="standard"
-                />
-              </>
-            )}
-
-            <TextField
-              label="URL de Foto"
-              value={currentObra.foto_url}
-              onChange={(e) => handleChange('foto_url', e.target.value)}
-              fullWidth
-              variant="standard"
-              className="md:col-span-2"
-            />
-            <TextField
-              label="Descripción"
-              value={currentObra.descripcion}
-              onChange={(e) => handleChange('descripcion', e.target.value)}
-              fullWidth
-              multiline
-              rows={4}
-              variant="standard"
-              className="md:col-span-2"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions className="p-6">
-          <Button onClick={handleClose} sx={{ color: '#666' }}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={enviando}
-            variant="contained"
-            sx={{
-              backgroundColor: '#000',
-              color: '#fff',
-              borderRadius: 0,
-              '&:hover': { backgroundColor: '#1a1a1a' }
-            }}
-          >
-            {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ObraFormDialog
+        open={open}
+        onClose={handleClose}
+        onSave={handleSave}
+        obra={obraSeleccionada}
+        artistas={artistas}
+        generos={generos}
+        enviando={enviando}
+        estatusOptions={estatusOptions}
+        tipoOptions={tipoOptions}
+      />
 
       {/* Modal de Foto */}
       <Dialog 
@@ -985,6 +568,87 @@ const ObrasContent = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Modal Historial de Auditoría (Cassandra) */}
+      <Dialog open={auditoriaModal.open} onClose={() => setAuditoriaModal({ open: false, obra: null, registros: [], loading: false, error: null })} maxWidth="md" fullWidth>
+        <DialogTitle className="font-light tracking-wide flex justify-between items-center border-b">
+          Historial de Auditoría (Cassandra)
+          <IconButton onClick={() => setAuditoriaModal({ open: false, obra: null, registros: [], loading: false, error: null })} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className="mt-4">
+          {auditoriaModal.loading ? (
+            <Box className="flex justify-center py-8">
+              <CircularProgress />
+            </Box>
+          ) : auditoriaModal.error ? (
+            <Alert severity="error">{auditoriaModal.error}</Alert>
+          ) : (
+            <Box className="space-y-4">
+              <Typography variant="h6" className="font-light">
+                Obra: <strong>{auditoriaModal.obra?.nombre}</strong>
+              </Typography>
+              <Typography variant="body2" className="text-gray-600">
+                Historial inmutable de auditoría para esta obra almacenado en Cassandra.
+              </Typography>
+              
+              <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', mt: 2 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#fafafa' }}>
+                      <TableCell sx={{ fontWeight: 500 }}>Fecha Evento</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>Tipo de Evento</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>Usuario Admin</TableCell>
+                      <TableCell sx={{ fontWeight: 500 }}>Detalles del Cambio</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {auditoriaModal.registros.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center" sx={{ py: 4, color: '#666' }}>
+                          No hay registros de auditoría para esta obra.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      auditoriaModal.registros.map((registro, idx) => (
+                        <TableRow key={idx} hover>
+                          <TableCell sx={{ fontSize: '0.85rem' }}>
+                            {registro.fecha_evento ? new Date(registro.fecha_evento).toLocaleString('es-ES') : 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={registro.evento_tipo} 
+                              size="small"
+                              sx={{ 
+                                backgroundColor: registro.evento_tipo === 'ELIMINACION_OBRA' ? '#ffebee' : '#e3f2fd',
+                                color: registro.evento_tipo === 'ELIMINACION_OBRA' ? '#c62828' : '#0d47a1',
+                                borderRadius: 0,
+                                fontSize: '0.7rem'
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.85rem' }}>{registro.usuario_admin}</TableCell>
+                          <TableCell sx={{ fontSize: '0.8rem', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                            {typeof registro.detalles_cambio === 'object' 
+                              ? JSON.stringify(registro.detalles_cambio, null, 2)
+                              : registro.detalles_cambio}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions className="p-4 border-t">
+          <Button onClick={() => setAuditoriaModal({ open: false, obra: null, registros: [], loading: false, error: null })} sx={{ borderRadius: 0 }}>
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Modal de Confirmación de Eliminación */}
       <ConfirmDeleteDialog
         open={deleteDialog.open}
@@ -997,5 +661,446 @@ const ObrasContent = () => {
     </Box>
   );
 };
+
+const ObraFormDialog = memo(function ObraFormDialog({
+  open,
+  onClose,
+  onSave,
+  obra,
+  artistas,
+  generos,
+  enviando,
+  estatusOptions,
+  tipoOptions
+}) {
+  const [currentObra, setCurrentObra] = useState({
+    nombre: '',
+    artista_id: '',
+    genero_id: '',
+    precio_usd: '',
+    fecha_creacion: '',
+    estatus: 'DISPONIBLE',
+    descripcion: '',
+    foto_url: '',
+    tipo: '',
+    tecnica: '',
+    soporte: '',
+    alto_cm: '',
+    ancho_cm: '',
+    material: '',
+    peso_kg: '',
+    largo_cm: '',
+    profundidad_cm: '',
+    camara: '',
+    lente: '',
+    tipo_impresion: '',
+    edicion: '',
+    metal_principal: '',
+    pureza: '',
+    piedras: '',
+    peso_gramos: '',
+    tipo_pasta: '',
+    esmalte: '',
+    temperatura_coccion_c: ''
+  });
+
+  useEffect(() => {
+    if (obra) {
+      setCurrentObra(obra);
+    } else {
+      setCurrentObra({
+        nombre: '',
+        artista_id: '',
+        genero_id: '',
+        precio_usd: '',
+        fecha_creacion: '',
+        estatus: 'DISPONIBLE',
+        descripcion: '',
+        foto_url: '',
+        tipo: '',
+        tecnica: '',
+        soporte: '',
+        alto_cm: '',
+        ancho_cm: '',
+        material: '',
+        peso_kg: '',
+        largo_cm: '',
+        profundidad_cm: '',
+        camara: '',
+        lente: '',
+        tipo_impresion: '',
+        edicion: '',
+        metal_principal: '',
+        pureza: '',
+        piedras: '',
+        peso_gramos: '',
+        tipo_pasta: '',
+        esmalte: '',
+        temperatura_coccion_c: ''
+      });
+    }
+  }, [obra, open]);
+
+  const handleChange = (field, value) => {
+    setCurrentObra(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveClick = () => {
+    onSave(currentObra);
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle className="font-light tracking-wide">
+        {obra && obra.obra_id ? 'Editar Obra' : 'Nueva Obra'}
+      </DialogTitle>
+      <DialogContent>
+        <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <TextField
+            label="Nombre de la Obra"
+            value={currentObra.nombre}
+            onChange={(e) => handleChange('nombre', e.target.value)}
+            fullWidth
+            variant="standard"
+            className="md:col-span-2"
+          />
+          <FormControl fullWidth variant="standard">
+            <InputLabel>Artista</InputLabel>
+            <Select
+              value={currentObra.artista_id || ''}
+              onChange={(e) => handleChange('artista_id', e.target.value)}
+              label="Artista"
+            >
+              {artistas.map((artista) => (
+                <MenuItem key={artista.artista_id || artista.id} value={artista.artista_id || artista.id}>
+                  {artista.nombre_completo || artista.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth variant="standard">
+            <InputLabel>Género</InputLabel>
+            <Select
+              value={currentObra.genero_id || ''}
+              onChange={(e) => handleChange('genero_id', e.target.value)}
+              label="Género"
+            >
+              {generos.map((genero) => (
+                <MenuItem key={genero.genero_id || genero.id} value={genero.genero_id || genero.id}>
+                  {genero.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <TextField
+            label="Precio (USD)"
+            type="number"
+            value={currentObra.precio_usd}
+            onChange={(e) => handleChange('precio_usd', e.target.value)}
+            fullWidth
+            variant="standard"
+          />
+          <TextField
+            label="Fecha de Creación"
+            type="date"
+            value={currentObra.fecha_creacion}
+            onChange={(e) => handleChange('fecha_creacion', e.target.value)}
+            fullWidth
+            variant="standard"
+            InputLabelProps={{ shrink: true }}
+          />
+          <FormControl fullWidth variant="standard">
+            <InputLabel>Estatus</InputLabel>
+            <Select
+              value={currentObra.estatus}
+              onChange={(e) => handleChange('estatus', e.target.value)}
+              label="Estatus"
+            >
+              {estatusOptions.map((estatus) => (
+                <MenuItem key={estatus} value={estatus}>
+                  {estatus}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth variant="standard">
+            <InputLabel>Tipo de Obra</InputLabel>
+            <Select
+              value={currentObra.tipo || ''}
+              onChange={(e) => handleChange('tipo', e.target.value)}
+              label="Tipo de Obra"
+            >
+              {tipoOptions.map((tipo) => (
+                <MenuItem key={tipo.value} value={tipo.value}>
+                  {tipo.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Campos específicos por tipo */}
+          {currentObra.tipo === 'pintura' && (
+            <>
+              <TextField
+                label="Técnica"
+                value={currentObra.tecnica}
+                onChange={(e) => handleChange('tecnica', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Soporte"
+                value={currentObra.soporte}
+                onChange={(e) => handleChange('soporte', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Alto (cm)"
+                type="number"
+                value={currentObra.alto_cm}
+                onChange={(e) => handleChange('alto_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Ancho (cm)"
+                type="number"
+                value={currentObra.ancho_cm}
+                onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+            </>
+          )}
+
+          {currentObra.tipo === 'escultura' && (
+            <>
+              <TextField
+                label="Material"
+                value={currentObra.material}
+                onChange={(e) => handleChange('material', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Peso (kg)"
+                type="number"
+                value={currentObra.peso_kg}
+                onChange={(e) => handleChange('peso_kg', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Alto (cm)"
+                type="number"
+                value={currentObra.alto_cm}
+                onChange={(e) => handleChange('alto_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Ancho (cm)"
+                type="number"
+                value={currentObra.ancho_cm}
+                onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Largo (cm)"
+                type="number"
+                value={currentObra.largo_cm}
+                onChange={(e) => handleChange('largo_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Profundidad (cm)"
+                type="number"
+                value={currentObra.profundidad_cm}
+                onChange={(e) => handleChange('profundidad_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+            </>
+          )}
+
+          {currentObra.tipo === 'fotografia' && (
+            <>
+              <TextField
+                label="Cámara"
+                value={currentObra.camara}
+                onChange={(e) => handleChange('camara', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Lente"
+                value={currentObra.lente}
+                onChange={(e) => handleChange('lente', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Tipo de Impresión"
+                value={currentObra.tipo_impresion}
+                onChange={(e) => handleChange('tipo_impresion', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Edición"
+                value={currentObra.edicion}
+                onChange={(e) => handleChange('edicion', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Alto (cm)"
+                type="number"
+                value={currentObra.alto_cm}
+                onChange={(e) => handleChange('alto_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Ancho (cm)"
+                type="number"
+                value={currentObra.ancho_cm}
+                onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+            </>
+          )}
+
+          {currentObra.tipo === 'orfebreria' && (
+            <>
+              <TextField
+                label="Metal Principal"
+                value={currentObra.metal_principal}
+                onChange={(e) => handleChange('metal_principal', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Pureza"
+                value={currentObra.pureza}
+                onChange={(e) => handleChange('pureza', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Piedras"
+                value={currentObra.piedras}
+                onChange={(e) => handleChange('piedras', e.target.value)}
+                fullWidth
+                variant="standard"
+                className="md:col-span-2"
+              />
+              <TextField
+                label="Peso (gramos)"
+                type="number"
+                value={currentObra.peso_gramos}
+                onChange={(e) => handleChange('peso_gramos', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+            </>
+          )}
+
+          {currentObra.tipo === 'ceramica' && (
+            <>
+              <TextField
+                label="Tipo de Pasta"
+                value={currentObra.tipo_pasta}
+                onChange={(e) => handleChange('tipo_pasta', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Esmalte"
+                value={currentObra.esmalte}
+                onChange={(e) => handleChange('esmalte', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Temperatura de Cocción (°C)"
+                type="number"
+                value={currentObra.temperatura_coccion_c}
+                onChange={(e) => handleChange('temperatura_coccion_c', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Alto (cm)"
+                type="number"
+                value={currentObra.alto_cm}
+                onChange={(e) => handleChange('alto_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Ancho (cm)"
+                type="number"
+                value={currentObra.ancho_cm}
+                onChange={(e) => handleChange('ancho_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+              <TextField
+                label="Largo (cm)"
+                type="number"
+                value={currentObra.largo_cm}
+                onChange={(e) => handleChange('largo_cm', e.target.value)}
+                fullWidth
+                variant="standard"
+              />
+            </>
+          )}
+
+          <TextField
+            label="URL de Foto"
+            value={currentObra.foto_url}
+            onChange={(e) => handleChange('foto_url', e.target.value)}
+            fullWidth
+            variant="standard"
+            className="md:col-span-2"
+          />
+          <TextField
+            label="Descripción"
+            value={currentObra.descripcion}
+            onChange={(e) => handleChange('descripcion', e.target.value)}
+            fullWidth
+            multiline
+            rows={4}
+            variant="standard"
+            className="md:col-span-2"
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions className="p-6">
+        <Button onClick={onClose} sx={{ color: '#666' }}>
+          Cancelar
+        </Button>
+        <Button
+          onClick={handleSaveClick}
+          disabled={enviando}
+          variant="contained"
+          sx={{
+            backgroundColor: '#000',
+            color: '#fff',
+            borderRadius: 0,
+            '&:hover': { backgroundColor: '#1a1a1a' }
+          }}
+        >
+          {enviando ? <CircularProgress size={20} color="inherit" /> : 'Guardar'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+});
 
 export default ObrasContent;

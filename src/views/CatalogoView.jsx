@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Chip, TextField, MenuItem, CircularProgress } from '@mui/material';
+import { Container, Typography, Box, Grid, Card, CardMedia, CardContent, Chip, TextField, MenuItem, CircularProgress, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { catalogoService } from '../services';
+import { catalogoService, recomendacionService } from '../services';
 
 const CatalogoView = () => {
   const navigate = useNavigate();
@@ -14,6 +14,8 @@ const CatalogoView = () => {
   const [filtroPrecio, setFiltroPrecio] = useState('todos');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [recomendaciones, setRecomendaciones] = useState([]);
+  const carouselRef = useRef(null);
   const cargadoRef = useRef(false);
 
   useEffect(() => {
@@ -40,6 +42,27 @@ const CatalogoView = () => {
             return acc;
           }, []);
         setArtistas(artistasUnicos);
+
+        // Cargar recomendaciones (Neo4j)
+        try {
+          const comprador = JSON.parse(localStorage.getItem('compradorAuth') || 'null');
+          const compradorId = comprador?.data?.comprador_id || comprador?.comprador_id || 'anonimo';
+          const recomRes = await recomendacionService.obtenerSugerencias(compradorId);
+          if (recomRes && recomRes.obras_enriquecidas) {
+            setRecomendaciones(recomRes.obras_enriquecidas.map(o => ({
+              obra_id: o.id || o.obra_id,
+              nombre: o.titulo || o.nombre,
+              foto_url: o.foto_url,
+              precio_usd: o.precio || o.precio_usd,
+              artista: o.artista || { nombre_completo: 'Artista' },
+              genero: o.genero || { nombre: 'Arte' },
+              tipo: o.tipo || '',
+              estatus: o.disponible ? 'DISPONIBLE' : 'VENDIDA'
+            })));
+          }
+        } catch (recErr) {
+          console.error('Recomendaciones no disponibles:', recErr);
+        }
       } catch (err) {
         setError('Error al cargar las obras');
         console.error(err);
@@ -51,9 +74,19 @@ const CatalogoView = () => {
     cargarDatos();
   }, []);
 
+  const scrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = 320;
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const obrasFiltradas = obras.filter(obra => {
-    const cumpleGenero = filtroGenero === 'todos' || obra.genero_id === parseInt(filtroGenero);
-    const cumpleArtista = filtroArtista === 'todos' || obra.artista_id === parseInt(filtroArtista);
+    const cumpleGenero = filtroGenero === 'todos' || String(obra.genero_id) === String(filtroGenero);
+    const cumpleArtista = filtroArtista === 'todos' || String(obra.artista_id) === String(filtroArtista);
     const cumpleEstatus = filtroEstatus === 'todos' || obra.estatus?.toUpperCase() === filtroEstatus.toUpperCase();
     
     let cumplePrecio = true;
@@ -84,6 +117,120 @@ const CatalogoView = () => {
           Explora nuestra colección de arte contemporáneo
         </Typography>
       </Box>
+
+      {/* Carrusel de Recomendaciones */}
+      {recomendaciones.length > 0 && (
+        <Box className="mb-16">
+          <Box className="flex items-center justify-between mb-6">
+            <Box>
+              <Typography
+                variant="h5"
+                className="font-extralight tracking-widest text-black uppercase"
+                sx={{ letterSpacing: '0.15em', fontSize: '1.1rem' }}
+              >
+                Recomendado para ti
+              </Typography>
+              <Box className="w-16 h-px bg-black mt-2" />
+            </Box>
+            <Box className="flex gap-2">
+              <IconButton
+                onClick={() => scrollCarousel('left')}
+                sx={{
+                  border: '1px solid #e5e5e5',
+                  borderRadius: 0,
+                  width: 36,
+                  height: 36,
+                  '&:hover': { borderColor: '#000', backgroundColor: '#000', color: '#fff' },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <span style={{ fontSize: '14px' }}>&#8592;</span>
+              </IconButton>
+              <IconButton
+                onClick={() => scrollCarousel('right')}
+                sx={{
+                  border: '1px solid #e5e5e5',
+                  borderRadius: 0,
+                  width: 36,
+                  height: 36,
+                  '&:hover': { borderColor: '#000', backgroundColor: '#000', color: '#fff' },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <span style={{ fontSize: '14px' }}>&#8594;</span>
+              </IconButton>
+            </Box>
+          </Box>
+
+          <Box
+            ref={carouselRef}
+            sx={{
+              display: 'flex',
+              gap: '20px',
+              overflowX: 'auto',
+              scrollBehavior: 'smooth',
+              pb: 2,
+              '&::-webkit-scrollbar': { height: '4px' },
+              '&::-webkit-scrollbar-thumb': { backgroundColor: '#ccc', borderRadius: '2px' },
+              '&::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+            }}
+          >
+            {recomendaciones.map((obra, index) => (
+              <Box
+                key={obra.obra_id || index}
+                onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
+                sx={{
+                  minWidth: '280px',
+                  maxWidth: '280px',
+                  cursor: 'pointer',
+                  border: '1px solid #e5e5e5',
+                  transition: 'all 0.4s ease',
+                  backgroundColor: '#fff',
+                  '&:hover': {
+                    borderColor: '#000',
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.08)',
+                  },
+                }}
+              >
+                <Box sx={{ height: '220px', overflow: 'hidden', backgroundColor: '#f5f5f5' }}>
+                  <img
+                    src={obra.foto_url}
+                    alt={obra.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </Box>
+                <Box sx={{ p: 2 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.75rem',
+                      fontWeight: 300,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                      mb: 0.5,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {obra.nombre}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: '0.7rem', color: '#888', fontWeight: 300, letterSpacing: '0.03em', mb: 1 }}
+                  >
+                    {obra.artista?.nombre_completo || obra.artista?.nombre || 'Artista'}
+                  </Typography>
+                  <Typography
+                    sx={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0.05em' }}
+                  >
+                    ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
 
       {/* Filtros */}
       <Box className="mb-12 flex flex-col sm:flex-row gap-4">

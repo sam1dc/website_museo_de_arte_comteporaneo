@@ -226,4 +226,12 @@ export const reportesAdminService = {
     const response = await apiCall('/admin/perfil');
     return response.data || response;
   },
+  obtenerFacturacionMensual: async (anioMes) => {
+    const response = await apiCall(`/admin/reportes/facturacion/${anioMes}`);
+    return response;
+  },
+  obtenerAuditoriaObra: async (obraId) => {
+    const response = await apiCall(`/admin/reportes/auditoria/${obraId}`);
+    return response;
+  },
 };

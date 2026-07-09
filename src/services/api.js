@@ -6,14 +6,15 @@ export const apiCall = async (endpoint, options = {}) => {
   let resolvedEndpoint = endpoint;
   if (!endpoint.startsWith('/laravel')) {
     const isFastApiRoute =
-      // endpoint.startsWith('/obras') ||
-      // endpoint.startsWith('/generos') ||
-      // endpoint.startsWith('/artistas') ||
+      endpoint.startsWith('/obras') ||
+      endpoint.startsWith('/generos') ||
+      endpoint.startsWith('/artistas') ||
       endpoint.startsWith('/recomendaciones') ||
       endpoint.startsWith('/admin/obras') ||
       endpoint.startsWith('/admin/artistas') ||
       endpoint.startsWith('/admin/generos') ||
-      endpoint.startsWith('/admin/reportes/auditoria');
+      endpoint.startsWith('/admin/reportes/auditoria') ||
+      endpoint.startsWith('/admin/reportes/facturacion');
 
     if (!isFastApiRoute) {
       resolvedEndpoint = `/laravel${endpoint}`;
