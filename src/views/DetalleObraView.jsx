@@ -194,7 +194,7 @@ const DetalleObraView = () => {
           </Box>
 
           {/* Detalles técnicos según tipo de obra */}
-          {obra.pintura && (
+          {obra.tipo === 'pintura' && (obra.pintura?.tecnica || obra.pintura?.soporte || obra.pintura?.alto_cm || obra.pintura?.ancho_cm) ? (
             <Box className="mb-6 p-4 bg-gray-50 border border-gray-200">
               <Typography 
                 className="text-gray-600 font-light mb-3 uppercase"
@@ -203,27 +203,35 @@ const DetalleObraView = () => {
                 Detalles Técnicos - Pintura
               </Typography>
               <Box className="grid grid-cols-2 gap-3">
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
-                  <Typography className="font-light">{obra.pintura.tecnica || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Soporte</Typography>
-                  <Typography className="font-light">{obra.pintura.soporte || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
-                  <Typography className="font-light">{obra.pintura.alto_cm ? `${obra.pintura.alto_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
-                  <Typography className="font-light">{obra.pintura.ancho_cm ? `${obra.pintura.ancho_cm} cm` : 'N/A'}</Typography>
-                </Box>
+                {obra.pintura?.tecnica && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
+                    <Typography className="font-light">{obra.pintura.tecnica}</Typography>
+                  </Box>
+                )}
+                {obra.pintura?.soporte && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Soporte</Typography>
+                    <Typography className="font-light">{obra.pintura.soporte}</Typography>
+                  </Box>
+                )}
+                {obra.pintura?.alto_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
+                    <Typography className="font-light">{obra.pintura.alto_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.pintura?.ancho_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
+                    <Typography className="font-light">{obra.pintura.ancho_cm} cm</Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
-          )}
+          ) : null}
 
-          {obra.escultura && (
+          {obra.tipo === 'escultura' && (obra.escultura?.material || obra.escultura?.tecnica || obra.escultura?.alto_cm || obra.escultura?.ancho_cm || obra.escultura?.profundidad_cm || obra.escultura?.peso_kg) ? (
             <Box className="mb-6 p-4 bg-gray-50 border border-gray-200">
               <Typography 
                 className="text-gray-600 font-light mb-3 uppercase"
@@ -232,35 +240,47 @@ const DetalleObraView = () => {
                 Detalles Técnicos - Escultura
               </Typography>
               <Box className="grid grid-cols-2 gap-3">
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Material</Typography>
-                  <Typography className="font-light">{obra.escultura.material || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
-                  <Typography className="font-light">{obra.escultura.tecnica || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
-                  <Typography className="font-light">{obra.escultura.alto_cm ? `${obra.escultura.alto_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
-                  <Typography className="font-light">{obra.escultura.ancho_cm ? `${obra.escultura.ancho_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Profundidad</Typography>
-                  <Typography className="font-light">{obra.escultura.profundidad_cm ? `${obra.escultura.profundidad_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Peso</Typography>
-                  <Typography className="font-light">{obra.escultura.peso_kg ? `${obra.escultura.peso_kg} kg` : 'N/A'}</Typography>
-                </Box>
+                {obra.escultura?.material && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Material</Typography>
+                    <Typography className="font-light">{obra.escultura.material}</Typography>
+                  </Box>
+                )}
+                {obra.escultura?.tecnica && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
+                    <Typography className="font-light">{obra.escultura.tecnica}</Typography>
+                  </Box>
+                )}
+                {obra.escultura?.alto_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
+                    <Typography className="font-light">{obra.escultura.alto_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.escultura?.ancho_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
+                    <Typography className="font-light">{obra.escultura.ancho_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.escultura?.profundidad_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Profundidad</Typography>
+                    <Typography className="font-light">{obra.escultura.profundidad_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.escultura?.peso_kg && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Peso</Typography>
+                    <Typography className="font-light">{obra.escultura.peso_kg} kg</Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
-          )}
+          ) : null}
 
-          {obra.fotografia && (
+          {obra.tipo === 'fotografia' && (obra.fotografia?.tecnica || obra.fotografia?.soporte || obra.fotografia?.camara || obra.fotografia?.lente || obra.fotografia?.tipo_impresion || obra.fotografia?.alto_cm || obra.fotografia?.ancho_cm || obra.fotografia?.edicion || obra.fotografia?.numero) ? (
             <Box className="mb-6 p-4 bg-gray-50 border border-gray-200">
               <Typography 
                 className="text-gray-600 font-light mb-3 uppercase"
@@ -269,35 +289,65 @@ const DetalleObraView = () => {
                 Detalles Técnicos - Fotografía
               </Typography>
               <Box className="grid grid-cols-2 gap-3">
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
-                  <Typography className="font-light">{obra.fotografia.tecnica || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Soporte</Typography>
-                  <Typography className="font-light">{obra.fotografia.soporte || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
-                  <Typography className="font-light">{obra.fotografia.alto_cm ? `${obra.fotografia.alto_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
-                  <Typography className="font-light">{obra.fotografia.ancho_cm ? `${obra.fotografia.ancho_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Edición</Typography>
-                  <Typography className="font-light">{obra.fotografia.edicion || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Número</Typography>
-                  <Typography className="font-light">{obra.fotografia.numero || 'N/A'}</Typography>
-                </Box>
+                {obra.fotografia?.camara && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Cámara</Typography>
+                    <Typography className="font-light">{obra.fotografia.camara}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.lente && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Lente</Typography>
+                    <Typography className="font-light">{obra.fotografia.lente}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.tipo_impresion && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Tipo Impresión</Typography>
+                    <Typography className="font-light">{obra.fotografia.tipo_impresion}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.tecnica && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
+                    <Typography className="font-light">{obra.fotografia.tecnica}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.soporte && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Soporte</Typography>
+                    <Typography className="font-light">{obra.fotografia.soporte}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.alto_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
+                    <Typography className="font-light">{obra.fotografia.alto_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.ancho_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Ancho</Typography>
+                    <Typography className="font-light">{obra.fotografia.ancho_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.edicion && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Edición</Typography>
+                    <Typography className="font-light">{obra.fotografia.edicion}</Typography>
+                  </Box>
+                )}
+                {obra.fotografia?.numero && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Número</Typography>
+                    <Typography className="font-light">{obra.fotografia.numero}</Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
-          )}
+          ) : null}
 
-          {obra.orfebreria && (
+          {obra.tipo === 'orfebreria' && (obra.orfebreria?.metal_principal || obra.orfebreria?.pureza || obra.orfebreria?.piedras || obra.orfebreria?.material || obra.orfebreria?.tecnica || obra.orfebreria?.peso_gramos || obra.orfebreria?.quilates) ? (
             <Box className="mb-6 p-4 bg-gray-50 border border-gray-200">
               <Typography 
                 className="text-gray-600 font-light mb-3 uppercase"
@@ -306,27 +356,53 @@ const DetalleObraView = () => {
                 Detalles Técnicos - Orfebrería
               </Typography>
               <Box className="grid grid-cols-2 gap-3">
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Material</Typography>
-                  <Typography className="font-light">{obra.orfebreria.material || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
-                  <Typography className="font-light">{obra.orfebreria.tecnica || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Peso</Typography>
-                  <Typography className="font-light">{obra.orfebreria.peso_gramos ? `${obra.orfebreria.peso_gramos} g` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Quilates</Typography>
-                  <Typography className="font-light">{obra.orfebreria.quilates || 'N/A'}</Typography>
-                </Box>
+                {obra.orfebreria?.metal_principal && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Metal Principal</Typography>
+                    <Typography className="font-light">{obra.orfebreria.metal_principal}</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.pureza && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Pureza</Typography>
+                    <Typography className="font-light">{obra.orfebreria.pureza}</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.piedras && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Piedras</Typography>
+                    <Typography className="font-light">{obra.orfebreria.piedras}</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.material && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Material</Typography>
+                    <Typography className="font-light">{obra.orfebreria.material}</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.tecnica && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
+                    <Typography className="font-light">{obra.orfebreria.tecnica}</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.peso_gramos && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Peso</Typography>
+                    <Typography className="font-light">{obra.orfebreria.peso_gramos} g</Typography>
+                  </Box>
+                )}
+                {obra.orfebreria?.quilates && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Quilates</Typography>
+                    <Typography className="font-light">{obra.orfebreria.quilates}</Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
-          )}
+          ) : null}
 
-          {obra.ceramica && (
+          {obra.tipo === 'ceramica' && (obra.ceramica?.tipo_pasta || obra.ceramica?.esmalte || obra.ceramica?.temperatura_coccion_c || obra.ceramica?.tecnica || obra.ceramica?.tipo_arcilla || obra.ceramica?.alto_cm || obra.ceramica?.diametro_cm || obra.ceramica?.esmaltado !== undefined) ? (
             <Box className="mb-6 p-4 bg-gray-50 border border-gray-200">
               <Typography 
                 className="text-gray-600 font-light mb-3 uppercase"
@@ -335,29 +411,57 @@ const DetalleObraView = () => {
                 Detalles Técnicos - Cerámica
               </Typography>
               <Box className="grid grid-cols-2 gap-3">
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
-                  <Typography className="font-light">{obra.ceramica.tecnica || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Tipo Arcilla</Typography>
-                  <Typography className="font-light">{obra.ceramica.tipo_arcilla || 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
-                  <Typography className="font-light">{obra.ceramica.alto_cm ? `${obra.ceramica.alto_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Diámetro</Typography>
-                  <Typography className="font-light">{obra.ceramica.diametro_cm ? `${obra.ceramica.diametro_cm} cm` : 'N/A'}</Typography>
-                </Box>
-                <Box>
-                  <Typography className="text-gray-500 text-xs uppercase mb-1">Esmaltado</Typography>
-                  <Typography className="font-light">{obra.ceramica.esmaltado ? 'Sí' : 'No'}</Typography>
-                </Box>
+                {obra.ceramica?.tipo_pasta && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Tipo Pasta</Typography>
+                    <Typography className="font-light">{obra.ceramica.tipo_pasta}</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.esmalte && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Esmalte</Typography>
+                    <Typography className="font-light">{obra.ceramica.esmalte}</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.temperatura_coccion_c && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Temperatura Cocción</Typography>
+                    <Typography className="font-light">{obra.ceramica.temperatura_coccion_c} °C</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.tecnica && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Técnica</Typography>
+                    <Typography className="font-light">{obra.ceramica.tecnica}</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.tipo_arcilla && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Tipo Arcilla</Typography>
+                    <Typography className="font-light">{obra.ceramica.tipo_arcilla}</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.alto_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Alto</Typography>
+                    <Typography className="font-light">{obra.ceramica.alto_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.diametro_cm && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Diámetro</Typography>
+                    <Typography className="font-light">{obra.ceramica.diametro_cm} cm</Typography>
+                  </Box>
+                )}
+                {obra.ceramica?.esmaltado !== undefined && (
+                  <Box>
+                    <Typography className="text-gray-500 text-xs uppercase mb-1">Esmaltado</Typography>
+                    <Typography className="font-light">{obra.ceramica.esmaltado ? 'Sí' : 'No'}</Typography>
+                  </Box>
+                )}
               </Box>
             </Box>
-          )}
+          ) : null}
           </div>
           {/* Fin área con scroll */}
 

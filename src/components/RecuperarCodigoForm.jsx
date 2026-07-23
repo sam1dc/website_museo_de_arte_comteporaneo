@@ -7,6 +7,8 @@ const RecuperarCodigoForm = ({ onSuccess, onCancel }) => {
   const [email, setEmail] = useState('');
   const [preguntas, setPreguntas] = useState([]);
   const [respuestas, setRespuestas] = useState(['', '', '']);
+  const [enviado, setEnviado] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
 
@@ -58,13 +60,81 @@ const RecuperarCodigoForm = ({ onSuccess, onCancel }) => {
 
     try {
       const data = await authService.recuperarCodigoSeguridad(email, respuestas);
-      onSuccess(data.message);
+      // Mostrar pantalla de éxito con el mensaje del servidor
+      setEnviado(true);
+      setMensajeExito(data.message || 'Si las respuestas son correctas, recibirás tu nuevo código de seguridad por correo.');
     } catch (err) {
       setError(err.message || 'Error al recuperar el código');
     } finally {
       setCargando(false);
     }
   };
+
+  // Pantalla de éxito después de enviar
+  if (enviado) {
+    return (
+      <Box className="flex flex-col gap-6 items-center text-center py-8">
+        <Box className="w-16 h-16 rounded-full bg-black flex items-center justify-center mb-4">
+          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </Box>
+        <Typography 
+          variant="h6" 
+          className="font-light tracking-wide"
+          sx={{ letterSpacing: '0.1em' }}
+        >
+          Solicitud Enviada
+        </Typography>
+        <Typography 
+          variant="body2" 
+          className="text-gray-600 font-light leading-relaxed"
+          sx={{ maxWidth: 400 }}
+        >
+          {mensajeExito}
+        </Typography>
+        <Box className="bg-gray-50 border border-gray-200 p-4 mt-2 w-full">
+          <Typography 
+            variant="caption" 
+            className="text-gray-500 font-light block"
+            sx={{ letterSpacing: '0.05em', lineHeight: 1.8 }}
+          >
+            📧 Revisa tu bandeja de entrada y también la carpeta de <strong>correo no deseado (spam)</strong>.
+          </Typography>
+          <Typography 
+            variant="caption" 
+            className="text-gray-500 font-light block mt-2"
+            sx={{ letterSpacing: '0.05em', lineHeight: 1.8 }}
+          >
+            El código de seguridad tiene 6 dígitos y lo necesitarás al momento de confirmar la compra de una obra.
+          </Typography>
+        </Box>
+        {onCancel && (
+          <Button
+            onClick={onCancel}
+            variant="outlined"
+            sx={{
+              borderColor: '#000',
+              color: '#000',
+              padding: '12px 32px',
+              fontSize: '0.875rem',
+              letterSpacing: '0.15em',
+              fontWeight: 300,
+              borderRadius: 0,
+              mt: 2,
+              '&:hover': { 
+                borderColor: '#000',
+                backgroundColor: 'rgba(0,0,0,0.05)' 
+              },
+              textTransform: 'uppercase'
+            }}
+          >
+            Cerrar
+          </Button>
+        )}
+      </Box>
+    );
+  }
 
   return (
     <Box className="flex flex-col gap-6">

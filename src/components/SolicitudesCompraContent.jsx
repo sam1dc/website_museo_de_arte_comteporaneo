@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
-import { Receipt as ReceiptIcon } from '@mui/icons-material';
+import { Receipt as ReceiptIcon, CheckCircleOutline as CheckCircleIcon } from '@mui/icons-material';
 import { compraService } from '../services';
 
 const SolicitudesCompraContent = () => {
@@ -10,6 +10,8 @@ const SolicitudesCompraContent = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [solicitudSeleccionada, setSolicitudSeleccionada] = useState(null);
   const [generando, setGenerando] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successData, setSuccessData] = useState(null);
   const cargadoRef = useRef(false);
 
   useEffect(() => {
@@ -64,10 +66,12 @@ const SolicitudesCompraContent = () => {
     try {
       setGenerando(true);
       await compraService.generarFactura(solicitudSeleccionada);
+      const data = { ...solicitudSeleccionada };
       setDialogOpen(false);
       setSolicitudSeleccionada(null);
+      setSuccessData(data);
+      setSuccessDialogOpen(true);
       cargarSolicitudes();
-      alert('Factura generada exitosamente. La obra ahora está VENDIDA y la factura ha sido enviada al correo del comprador.');
     } catch (err) {
       setError(err.message || 'Error al generar la factura');
     } finally {
@@ -289,6 +293,46 @@ const SolicitudesCompraContent = () => {
             }}
           >
             {generando ? <CircularProgress size={20} /> : 'Confirmar y Enviar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog Éxito - Factura Generada */}
+      <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogContent className="text-center py-8">
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+            <CheckCircleIcon sx={{ fontSize: 80, color: '#4caf50' }} />
+            <Typography variant="h5" className="font-light tracking-wide">
+              Factura Generada
+            </Typography>
+            <Typography variant="body1" className="text-gray-600" sx={{ maxWidth: 400 }}>
+              La factura ha sido creada exitosamente. La obra ahora está en estatus <strong>VENDIDA</strong> y la factura ha sido enviada al correo del comprador.
+            </Typography>
+            {successData && (
+              <Box className="text-left w-full max-w-sm bg-gray-50 p-4 border border-gray-200 mt-2">
+                <Typography variant="caption" className="text-gray-600 uppercase block mb-1">Detalles</Typography>
+                <Typography variant="body2" className="font-medium">{successData.obra?.nombre}</Typography>
+                <Typography variant="body2" className="text-gray-500">{successData.comprador?.nombre_completo || `${successData.comprador?.nombres} ${successData.comprador?.apellidos}`}</Typography>
+                <Typography variant="body2" className="font-bold mt-2">
+                  Total: ${calcularTotal(successData.precio_obra, successData.comision_museo).toFixed(2)}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions className="justify-center pb-6">
+          <Button
+            onClick={() => setSuccessDialogOpen(false)}
+            variant="contained"
+            sx={{
+              backgroundColor: '#000',
+              color: '#fff',
+              borderRadius: 0,
+              px: 6,
+              '&:hover': { backgroundColor: '#333' }
+            }}
+          >
+            Aceptar
           </Button>
         </DialogActions>
       </Dialog>

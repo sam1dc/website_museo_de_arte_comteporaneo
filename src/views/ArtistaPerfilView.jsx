@@ -147,75 +147,74 @@ const ArtistaPerfilView = () => {
         <Box className="w-20 h-0.5 bg-black mb-10" />
       </Box>
 
-      <Grid container spacing={{ xs: 3, md: 4 }}>
+      <Box className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {artista.obras?.map(obra => (
-          <Grid item xs={12} sm={6} md={4} key={obra.obra_id}>
-            <Card 
-              className="cursor-pointer transition-all hover:shadow-lg"
-              onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
-              sx={{ 
-                borderRadius: 0,
-                boxShadow: 'none',
-                border: '1px solid #e5e5e5',
-                '&:hover': { borderColor: '#000' }
-              }}
-            >
-              <Box sx={{ height: 300, overflow: 'hidden' }}>
-                <CardMedia
-                  component="img"
-                  image={obra.foto_url}
-                  alt={obra.nombre}
-                  sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </Box>
-              <CardContent className="p-4 md:p-6">
-                <Typography 
-                  variant="h6" 
-                  className="font-light tracking-wide mb-2 uppercase"
-                  sx={{ fontSize: '0.875rem', letterSpacing: '0.1em' }}
-                >
-                  {obra.nombre}
-                </Typography>
+          <Box
+            key={obra.obra_id}
+            onClick={() => navigate(`/museo-de-arte-contemporaneo/obra/${obra.obra_id}`)}
+            className="cursor-pointer transition-all hover:shadow-lg border border-gray-200 hover:border-black bg-white flex flex-col"
+            sx={{ height: '550px' }}
+          >
+            <Box className="w-full overflow-hidden bg-gray-100" sx={{ height: '320px', flexShrink: 0 }}>
+              <img
+                src={obra.foto_url}
+                alt={obra.nombre}
+                className="w-full h-full"
+                style={{ objectFit: 'cover', display: 'block' }}
+              />
+            </Box>
+            <Box className="p-4 flex flex-col flex-grow">
+              <Typography 
+                className="font-light tracking-wide mb-2 uppercase line-clamp-2"
+                sx={{ fontSize: '0.75rem', letterSpacing: '0.05em', minHeight: '2.5rem' }}
+              >
+                {obra.nombre}
+              </Typography>
+              
+              <Typography 
+                className="text-gray-600 font-light mb-2 truncate"
+                sx={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}
+              >
+                {artista.nombre_completo}
+              </Typography>
 
-                <Box className="flex items-center justify-between mb-3">
-                  <Chip 
-                    label={obra.genero?.nombre} 
-                    size="small"
-                    sx={{
-                      borderRadius: 0,
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                      fontWeight: 300,
-                      backgroundColor: '#f5f5f5',
-                      color: '#666'
-                    }}
-                  />
-                  <Chip 
-                    label={obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'} 
-                    size="small"
-                    sx={{
-                      borderRadius: 0,
-                      fontSize: '0.65rem',
-                      letterSpacing: '0.05em',
-                      fontWeight: 300,
-                      backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999',
-                      color: '#fff'
-                    }}
-                  />
+              <Typography 
+                className="text-gray-500 font-light mb-3 capitalize truncate"
+                sx={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}
+              >
+                {obra.tipo || 'N/A'}
+              </Typography>
+
+              <Box className="flex items-center justify-between mb-3 gap-2">
+                <Box 
+                  className="px-2 py-1 bg-gray-100 text-gray-600 truncate"
+                  sx={{ fontSize: '0.75rem', letterSpacing: '0.05em', fontWeight: 300 }}
+                >
+                  {obra.genero?.nombre || 'N/A'}
                 </Box>
-
-                <Typography 
-                  variant="h6" 
-                  className="font-light"
-                  sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
+                <Box 
+                  className="px-2 py-1 text-white whitespace-nowrap"
+                  sx={{ 
+                    fontSize: '0.75rem', 
+                    letterSpacing: '0.05em', 
+                    fontWeight: 300,
+                    backgroundColor: obra.estatus === 'DISPONIBLE' ? '#000' : '#999'
+                  }}
                 >
-                  ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+                  {obra.estatus === 'DISPONIBLE' ? 'Disponible' : 'Vendida'}
+                </Box>
+              </Box>
+
+              <Typography 
+                className="font-light mt-auto"
+                sx={{ fontSize: '1rem', letterSpacing: '0.05em' }}
+              >
+                ${obra.precio_usd ? parseFloat(obra.precio_usd).toLocaleString() : '0'}
+              </Typography>
+            </Box>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {!artista.obras || artista.obras.length === 0 && (
         <Box className="text-center py-16">

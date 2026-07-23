@@ -106,8 +106,11 @@ const CheckoutView = () => {
       setEnviando(true);
       setError(null);
 
+      // Usar obra_id_mysql (ID entero de MySQL/Laravel) si está disponible,
+      // de lo contrario usar obra_id (string de MongoDB) - Laravel espera un entero
+      const obraIdParaLaravel = obra.obra_id_mysql || obra.obra_id;
       const solicitud = {
-        obra_id: obra.obra_id,
+        obra_id: obraIdParaLaravel,
         comprador_id: comprador.data?.comprador_id || comprador.comprador_id,
         codigo_seguridad: formData.codigoSeguridad
       };
