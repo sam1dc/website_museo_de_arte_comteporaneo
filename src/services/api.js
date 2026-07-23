@@ -33,6 +33,12 @@ export const apiCall = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, defaultOptions);
+
+    // 204 No Content (e.g. DELETE exitoso) — no hay body que parsear
+    if (response.status === 204) {
+      return null;
+    }
+
     const data = await response.json();
 
     if (!response.ok) {

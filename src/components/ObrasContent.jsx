@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Avatar, Tooltip } from '@mui/material';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, FormControl, InputLabel, Select, MenuItem, CircularProgress, Alert, Avatar, Tooltip, Pagination } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Image as ImageIcon, Close as CloseIcon, Visibility as VisibilityIcon, History as HistoryIcon } from '@mui/icons-material';
 import { obrasAdminService, artistasAdminService, generosAdminService } from '../services';
 import { useAuth } from '../hooks/useAuth';
@@ -26,6 +26,8 @@ const ObrasContent = () => {
   const [auditoriaModal, setAuditoriaModal] = useState({ open: false, obra: null, registros: [], loading: false, error: null });
   const cargadoRef = useRef(false);
   const [obraSeleccionada, setObraSeleccionada] = useState(null);
+  const OBRAS_POR_PAGINA = 20;
+  const [paginaActual, setPaginaActual] = useState(1);
 
   const estatusOptions = ['DISPONIBLE', 'RESERVADA', 'VENDIDA'];
   const tipoOptions = [
@@ -52,6 +54,7 @@ const ObrasContent = () => {
         setObras(obrasData);
         setArtistas(artistasData);
         setGeneros(generosData);
+        setPaginaActual(1);
       } catch (err) {
         setError('Error al cargar los datos');
         console.error(err);
@@ -233,6 +236,11 @@ const ObrasContent = () => {
       ) : (
       <>
       {/* Vista Desktop */}
+      <Box sx={{ mb: 1, display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+        <Typography variant="body2" sx={{ color: '#666', fontWeight: 300 }}>
+          Mostrando {Math.min((paginaActual - 1) * OBRAS_POR_PAGINA + 1, obras.length)}–{Math.min(paginaActual * OBRAS_POR_PAGINA, obras.length)} de {obras.length} obras
+        </Typography>
+      </Box>
       <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
         <Table sx={{ width: '100%' }}>
           <TableHead>
@@ -251,7 +259,7 @@ const ObrasContent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {obras.map((obra) => {
+            {obras.slice((paginaActual - 1) * OBRAS_POR_PAGINA, paginaActual * OBRAS_POR_PAGINA).map((obra) => {
               const estatusStyle = getEstatusColor(obra.estatus);
               return (
                 <TableRow key={obra.obra_id} hover>
@@ -357,9 +365,30 @@ const ObrasContent = () => {
         </Table>
       </TableContainer>
 
+      {/* Paginación Desktop */}
+      {obras.length > OBRAS_POR_PAGINA && (
+        <Box className="hidden md:flex justify-center mt-6">
+          <Pagination
+            count={Math.ceil(obras.length / OBRAS_POR_PAGINA)}
+            page={paginaActual}
+            onChange={(_, page) => { setPaginaActual(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            sx={{
+              '& .MuiPaginationItem-root': { borderRadius: 0, fontWeight: 300, letterSpacing: '0.05em' },
+              '& .MuiPaginationItem-root.Mui-selected': { backgroundColor: '#000', color: '#fff' },
+              '& .MuiPaginationItem-root.Mui-selected:hover': { backgroundColor: '#333' },
+            }}
+          />
+        </Box>
+      )}
+
       {/* Vista Mobile */}
+      <Box sx={{ mb: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+        <Typography variant="body2" sx={{ color: '#666', fontWeight: 300 }}>
+          Mostrando {Math.min((paginaActual - 1) * OBRAS_POR_PAGINA + 1, obras.length)}–{Math.min(paginaActual * OBRAS_POR_PAGINA, obras.length)} de {obras.length} obras
+        </Typography>
+      </Box>
       <Box className="block md:hidden space-y-4">
-        {obras.map((obra) => {
+        {obras.slice((paginaActual - 1) * OBRAS_POR_PAGINA, paginaActual * OBRAS_POR_PAGINA).map((obra) => {
           const estatusStyle = getEstatusColor(obra.estatus);
           return (
             <Paper key={obra.obra_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
@@ -422,6 +451,23 @@ const ObrasContent = () => {
           );
         })}
       </Box>
+
+      {/* Paginación Mobile */}
+      {obras.length > OBRAS_POR_PAGINA && (
+        <Box className="flex md:hidden justify-center mt-6">
+          <Pagination
+            count={Math.ceil(obras.length / OBRAS_POR_PAGINA)}
+            page={paginaActual}
+            onChange={(_, page) => { setPaginaActual(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            size="small"
+            sx={{
+              '& .MuiPaginationItem-root': { borderRadius: 0, fontWeight: 300 },
+              '& .MuiPaginationItem-root.Mui-selected': { backgroundColor: '#000', color: '#fff' },
+              '& .MuiPaginationItem-root.Mui-selected:hover': { backgroundColor: '#333' },
+            }}
+          />
+        </Box>
+      )}
       </>
       )}
 

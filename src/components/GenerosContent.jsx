@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Alert, Pagination } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { generosAdminService } from '../services';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
@@ -14,6 +14,8 @@ const GenerosContent = () => {
   const [editMode, setEditMode] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const cargadoRef = useRef(false);
+  const GENEROS_POR_PAGINA = 20;
+  const [paginaActual, setPaginaActual] = useState(1);
   const [currentGenero, setCurrentGenero] = useState({ nombre: '', descripcion: '' });
 
   useEffect(() => {
@@ -25,6 +27,7 @@ const GenerosContent = () => {
         setCargando(true);
         const generosData = await generosAdminService.obtenerTodos();
         setGeneros(generosData);
+        setPaginaActual(1);
       } catch (err) {
         setError('Error al cargar los géneros');
         console.error(err);
@@ -132,6 +135,11 @@ const GenerosContent = () => {
       ) : (
       <>
       {/* Vista Desktop */}
+      <Box sx={{ mb: 1, display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+        <Typography variant="body2" sx={{ color: '#666', fontWeight: 300 }}>
+          Mostrando {Math.min((paginaActual - 1) * GENEROS_POR_PAGINA + 1, generos.length)}–{Math.min(paginaActual * GENEROS_POR_PAGINA, generos.length)} de {generos.length} géneros
+        </Typography>
+      </Box>
       <TableContainer component={Paper} className="hidden md:block" sx={{ boxShadow: 'none', border: '1px solid #e5e5e5', width: '100%' }}>
         <Table sx={{ width: '100%' }}>
           <TableHead>
@@ -142,7 +150,7 @@ const GenerosContent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {generos.map((genero) => (
+            {generos.slice((paginaActual - 1) * GENEROS_POR_PAGINA, paginaActual * GENEROS_POR_PAGINA).map((genero) => (
               <TableRow key={genero.genero_id} hover>
                 <TableCell>
                   <Typography className="font-medium">{genero.nombre}</Typography>
@@ -166,9 +174,30 @@ const GenerosContent = () => {
         </Table>
       </TableContainer>
 
+      {/* Paginación Desktop */}
+      {generos.length > GENEROS_POR_PAGINA && (
+        <Box className="hidden md:flex justify-center mt-6">
+          <Pagination
+            count={Math.ceil(generos.length / GENEROS_POR_PAGINA)}
+            page={paginaActual}
+            onChange={(_, page) => { setPaginaActual(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            sx={{
+              '& .MuiPaginationItem-root': { borderRadius: 0, fontWeight: 300, letterSpacing: '0.05em' },
+              '& .MuiPaginationItem-root.Mui-selected': { backgroundColor: '#000', color: '#fff' },
+              '& .MuiPaginationItem-root.Mui-selected:hover': { backgroundColor: '#333' },
+            }}
+          />
+        </Box>
+      )}
+
       {/* Vista Mobile */}
+      <Box sx={{ mb: 1, display: { xs: 'flex', md: 'none' }, alignItems: 'center' }}>
+        <Typography variant="body2" sx={{ color: '#666', fontWeight: 300 }}>
+          Mostrando {Math.min((paginaActual - 1) * GENEROS_POR_PAGINA + 1, generos.length)}–{Math.min(paginaActual * GENEROS_POR_PAGINA, generos.length)} de {generos.length} géneros
+        </Typography>
+      </Box>
       <Box className="block md:hidden space-y-4">
-        {generos.map((genero) => (
+        {generos.slice((paginaActual - 1) * GENEROS_POR_PAGINA, paginaActual * GENEROS_POR_PAGINA).map((genero) => (
           <Paper key={genero.genero_id} className="p-4 border border-gray-200" sx={{ boxShadow: 'none' }}>
             <Box className="flex justify-between items-start mb-3">
               <Typography className="font-medium text-lg">{genero.nombre}</Typography>
@@ -187,6 +216,23 @@ const GenerosContent = () => {
           </Paper>
         ))}
       </Box>
+
+      {/* Paginación Mobile */}
+      {generos.length > GENEROS_POR_PAGINA && (
+        <Box className="flex md:hidden justify-center mt-6">
+          <Pagination
+            count={Math.ceil(generos.length / GENEROS_POR_PAGINA)}
+            page={paginaActual}
+            onChange={(_, page) => { setPaginaActual(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            size="small"
+            sx={{
+              '& .MuiPaginationItem-root': { borderRadius: 0, fontWeight: 300 },
+              '& .MuiPaginationItem-root.Mui-selected': { backgroundColor: '#000', color: '#fff' },
+              '& .MuiPaginationItem-root.Mui-selected:hover': { backgroundColor: '#333' },
+            }}
+          />
+        </Box>
+      )}
       </>
       )}
 
