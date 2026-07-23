@@ -1,5 +1,5 @@
 // Configuración base de la API (FastAPI)
-export const API_BASE_URL = 'http://127.0.0.1:8001/api/v1';
+export const API_BASE_URL = 'https://subacademic-unmarketed-arianna.ngrok-free.dev/api/v1';
 
 export const apiCall = async (endpoint, options = {}) => {
   // Determinar si la petición va a FastAPI directamente o si pasa por el proxy a Laravel
